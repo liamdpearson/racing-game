@@ -1,4 +1,4 @@
-# Liam Pearson --- Git Pushing Test
+# Liam Pearson
 # Oct 7 2025
 # Multiplayer Game Client
 
