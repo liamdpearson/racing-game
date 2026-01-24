@@ -1,2 +1,3 @@
-floppy
-1
+john doe
+0
+
