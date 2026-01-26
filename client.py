@@ -34,7 +34,6 @@ class Game(arcade.View):
         self.player_index = int(self.all_init_data[0])
         self.players = self.all_init_data[1:]
         self.player_data = self.players[self.player_index]
-        print(self.players)
         self.other_players_data = [player for player in self.players if int(player[0]) != self.player_index]
 
         self.char_index = int(self.player_data[-1])
@@ -243,9 +242,6 @@ class Player():
             self.direction = self.player_sprite.angle
 
     def update(self, delta_time):
-
-        if (arcade.key.LALT or arcade.key.RALT) in self.pressed_keys and arcade.key.F4 in self.pressed_keys:
-            self.window.done = True
 
         if self.forward_key in self.pressed_keys:
             self.speed += self.acceleration * delta_time * 60
