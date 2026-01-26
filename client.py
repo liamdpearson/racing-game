@@ -34,6 +34,7 @@ class Game(arcade.View):
         self.player_index = int(self.all_init_data[0])
         self.players = self.all_init_data[1:]
         self.player_data = self.players[self.player_index]
+        print(self.players)
         self.other_players_data = [player for player in self.players if int(player[0]) != self.player_index]
 
         self.char_index = int(self.player_data[-1])
