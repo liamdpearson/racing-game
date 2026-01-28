@@ -57,6 +57,7 @@ class Game(arcade.View):
 
         self.start_counter = 10
         self.locked = True
+        self.crossed_finishline = 0
         
         self.setup()
     
@@ -150,6 +151,7 @@ class Game(arcade.View):
         self.window.n.p_data = make_pos((self.player.player_sprite.center_x,
                                          self.player.player_sprite.center_y,
                                          self.player.player_sprite.angle,
+                                         self.crossed_finishline
                                          ))
         
         

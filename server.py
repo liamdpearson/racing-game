@@ -66,6 +66,7 @@ def main():
     
     s.listen()
     print("Waiting for a connection, Server Started")
+    finished_players = []
     all_init_data = []
     started = False
     # x, y, head_angle, legs_angle, anim_index, char_index
@@ -89,7 +90,10 @@ def main():
         while True:
             try:
                 data = read_pos(conn.recv(2048).decode())
-                pos[player] = data
+                pos[player] = data[:-1] # excludes finished state
+
+                if data[-1] == 1:
+                    finished_players.append(player)
     
                 
                 if not data:
@@ -112,7 +116,7 @@ def main():
         conn, addr = s.accept()
         print("Connected to ", addr)
 
-        pos.append((300+75*currentPlayer,2580,0))
+        pos.append((300+75*currentPlayer,2580,0,0))
         start_new_thread(threaded_client, (conn, currentPlayer))
         currentPlayer += 1
         
