@@ -54,6 +54,9 @@ class Game(arcade.View):
         self.gui_camera = None
         
         self.physics_engine = None
+
+        self.start_counter = 10
+        self.locked = True
         
         self.setup()
     
@@ -122,13 +125,22 @@ class Game(arcade.View):
         
         # draw gui 
         self.gui_camera.use()
+        if self.locked:
+            arcade.draw_text(int(self.start_counter), SCREEN_WIDTH/2, 
+                             SCREEN_HEIGHT/2, arcade.color.YELLOW,
+                             80, anchor_x="center", font_name="Kenney Mini Square")
 
         
         
     def on_update(self, delta_time):
             
         self.physics_engine.update()
-        self.player.update(delta_time)
+        if self.locked:
+            self.start_counter -= delta_time
+            if self.start_counter < 0:
+                self.locked = False
+        else:
+            self.player.update(delta_time)
         
         cam_pos_x = self.player.player_sprite.center_x - self.cam_offset_x
         cam_pos_y = self.player.player_sprite.center_y - self.cam_offset_y

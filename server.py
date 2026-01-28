@@ -64,7 +64,7 @@ def main():
     except socket.error as e:
         str(e)
     
-    s.listen(2)
+    s.listen()
     print("Waiting for a connection, Server Started")
     all_init_data = []
     started = False
@@ -108,11 +108,11 @@ def main():
         conn.close()
     
     currentPlayer = 0
-    while True:
+    while currentPlayer < 5:
         conn, addr = s.accept()
         print("Connected to ", addr)
 
-        pos.append((500,500,0))
+        pos.append((300+75*currentPlayer,2580,0))
         start_new_thread(threaded_client, (conn, currentPlayer))
         currentPlayer += 1
         
