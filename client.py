@@ -279,8 +279,8 @@ class Player():
         
         # movement calculations
 
-        self.player_sprite.change_y = math.cos(math.radians(-self.direction)) * self.speed
-        self.player_sprite.change_x = math.sin(math.radians(-self.direction)) * self.speed
+        self.player_sprite.change_y = math.cos(math.radians(-self.direction)) * self.speed * delta_time * 60
+        self.player_sprite.change_x = math.sin(math.radians(-self.direction)) * self.speed * delta_time * 60
 
         if self.speed > 0:
             self.speed -= 0.05 * delta_time * 30
