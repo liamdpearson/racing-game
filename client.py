@@ -12,6 +12,7 @@ import socket
 from network import Network
 import server
 import edit_file
+import objects
 
 
 
@@ -213,6 +214,8 @@ class Player():
 
         self.name = name
 
+        self.marker = objects.Marker()
+
         self.pressed_keys = []
         
         # mouse pos
@@ -230,6 +233,9 @@ class Player():
     def key_pressed(self, key, modifiers):
         if key not in self.pressed_keys:
             self.pressed_keys.append(key)
+
+        if key == arcade.key.SPACE:
+            print(edit_file.get_positions())
 
         if key == self.drift_key:
             self.top_speed *= 0.8

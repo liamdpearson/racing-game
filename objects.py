@@ -1,6 +1,16 @@
+import edit_file
+
 class Marker():
-    def __init__(self, init_pos_x, init_pos_y):
+    def __init__(self):
         self.counter = 0
+
+        self.positions = edit_file.get_positions().split(",")
+        for pos in self.positions:
+            pos.split()
         
-        self.pos_x = init_pos_x
-        self.pos_y = init_pos_y
+        print(self.positions)
+    
+    def update_pos(self, new_x, new_y):
+
+        self.x = new_x
+        self.y = new_y
