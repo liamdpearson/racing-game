@@ -5,7 +5,6 @@
 
 import arcade # type: ignore
 import arcade.gui # type: ignore
-import math
 import threading
 import socket
 
@@ -18,13 +17,15 @@ import objects
 
 SCREEN_WIDTH, SCREEN_HEIGHT = arcade.window_commands.get_display_size()
 
-#SCREEN_WIDTH, SCREEN_HEIGHT = 500, 500
+#SCREEN_WIDTH, SCREEN_HEIGHT = 1000, 1000
 
 
 class Game(arcade.View):
     """ Actual Game Function """
     def __init__(self, all_init_data):
         super().__init__()
+
+        self.fps = 0
 
         self.start_pos = read_pos(self.window.n.getData())
         
@@ -58,7 +59,8 @@ class Game(arcade.View):
 
         self.start_counter = 10
         self.locked = True
-        self.crossed_finishline = 0
+        self.current_place = 0
+        self.laps_to_go_msg = "3 laps to go"
         
         self.setup()
     
@@ -68,29 +70,25 @@ class Game(arcade.View):
         
         # setup map and walls
         self.tile_map = arcade.load_tilemap("maps/map1.json", scaling=3, offset=(0,0))
+        self.tire_list = self.tile_map.sprite_lists["Tires"]
+        self.head_list = self.tile_map.sprite_lists["Heads"]
+        self.shoulders_list = self.tile_map.sprite_lists["Shoulders"]
         self.wall_list = self.tile_map.sprite_lists["Walls"]
         self.floor_list = self.tile_map.sprite_lists["Floor"]
-        self.decor_list = self.tile_map.sprite_lists["Decor"]
-        self.no_walk_list = self.tile_map.sprite_lists["No Walk"]
-        
-        
-        self.walls_n_railings = self.wall_list
-        
-        for railing in self.no_walk_list:
-            self.walls_n_railings.append(railing)
+        self.finishline = self.tile_map.sprite_lists["FinishLine"]
         
         # pos x, pos y, move speed, anim speed, char index, 
-        self.player = Player(self.start_pos[0], self.start_pos[1], self.car_stats[self.char_index], [arcade.key.LSHIFT], self.char_index, self.name)
+        self.player = objects.Player(self.start_pos[0], self.start_pos[1], self.car_stats[self.char_index], [arcade.key.LSHIFT], self.char_index, self.name)
 
         for player in self.other_players_data:
-            self.other_players.append(OtherPlayer(500, 500, int(player[-1]), player[1:-1]))
+            self.other_players.append(objects.OtherPlayer(500, 500, int(player[-1]), player[1:-1]))
         
         # setup cameras
         self.camera = arcade.Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
         self.gui_camera = arcade.Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
         
         # setup physics engine
-        self.physics_engine = arcade.PhysicsEngineSimple(self.player.player_sprite, self.walls_n_railings)
+        self.physics_engine = arcade.PhysicsEngineSimple(self.player.player_sprite, self.wall_list)
         
         # camera offset
         self.cam_offset_x = SCREEN_WIDTH/2
@@ -113,10 +111,12 @@ class Game(arcade.View):
         
         self.camera.use()
         
-        self.floor_list.draw(pixelated = True)    
-        self.decor_list.draw(pixelated = True)
-        self.no_walk_list.draw(pixelated = True)
-        self.wall_list.draw(pixelated = True)
+        self.floor_list.draw(pixelated = True)
+        #self.wall_list.draw(pixelated = True)
+        self.tire_list.draw(pixelated = True)
+        self.head_list.draw(pixelated = True)
+        self.shoulders_list.draw(pixelated = True)
+        self.finishline.draw(pixelated = True)
         
         
         if self.other_players:
@@ -131,10 +131,19 @@ class Game(arcade.View):
             arcade.draw_text(int(self.start_counter), SCREEN_WIDTH/2, 
                              SCREEN_HEIGHT/2, arcade.color.YELLOW,
                              80, anchor_x="center", font_name="Kenney Mini Square")
+        
+
+        #draw fps
+        arcade.draw_text(str(self.fps) + " fps", 100, SCREEN_HEIGHT-100, arcade.color.WHITE, 20, font_name="Kenney Mini Square")
+        arcade.draw_text(str(self.current_place), 200, 200, arcade.color.YELLOW, 80, font_name="Kenney Mini Square")
+        arcade.draw_text(self.laps_to_go_msg, 100, 100, arcade.color.YELLOW, 40, font_name="Kenney Mini Square")
 
         
         
     def on_update(self, delta_time):
+
+        #update fps
+        self.fps = int(1/delta_time)
             
         self.physics_engine.update()
         if self.locked:
@@ -152,27 +161,31 @@ class Game(arcade.View):
         self.window.n.p_data = make_pos((self.player.player_sprite.center_x,
                                          self.player.player_sprite.center_y,
                                          self.player.player_sprite.angle,
-                                         self.crossed_finishline
+                                         self.player.marker.int_for_sorting
                                          ))
         
         
         if self.window.n.all_data:
-            self.all_positions = self.window.n.all_data.split()
+            self.current_place = int(self.window.n.all_data[-1])
+            self.all_positions = self.window.n.all_data[:-1].split()
             del self.all_positions[self.player_index]
             if self.all_positions:
                 for i in range(len(self.all_positions)):
-                    data = read_pos(self.all_positions[i])
-                    player = self.other_players[i]
-                    player.player_sprite.center_x = data[0]
-                    player.player_sprite.center_y = data[1]
-                    player.player_sprite.angle = data[2]
-        
-        #if self.other_players:
-            #for player in self.other_players:
-                #player.update()
-        
-    
-    
+                        data = read_pos(self.all_positions[i])
+                        if len(data) == 3:
+                            player = self.other_players[i]
+                            player.player_sprite.center_x = data[0]
+                            player.player_sprite.center_y = data[1]
+                            player.player_sprite.angle = data[2]
+
+        # finish line check
+        if arcade.check_for_collision_with_list(self.player.player_sprite, self.finishline):
+            if self.player.marker.total_checkpoints == 28:
+                self.laps_to_go_msg = "2 laps to go"
+            elif self.player.marker.total_checkpoints == 56:
+                self.laps_to_go_msg = "Final lap!"
+            elif self.player.marker.total_checkpoints == 84:
+                pass
         
 
 
@@ -186,137 +199,6 @@ class Game(arcade.View):
         
     #def on_mouse_motion(self, x, y, dx, dy):
         #self.player.mouse_x, self.player.mouse_y = x-SCREEN_WIDTH/2, y-SCREEN_HEIGHT/2
-        
-
-
-
-
-class Player():
-    def __init__(self, pos_x, pos_y, car_stats, keybinds, char_index, name):
-        super().__init__()
-        
-        # player variables
-        self.char_index = char_index
-        self.player_sprite = arcade.Sprite()
-        self.player_sprite.texture = arcade.load_texture("sprites/sprite_sheet.png", x = 0, y = 32*self.char_index, width = 32, height = 32)
-        self.player_sprite.scale = 3
-        self.player_sprite.center_x = pos_x
-        self.player_sprite.center_y = pos_y
-
-        self.top_speed = car_stats[0]
-        self.acceleration = car_stats[1]
-        self.break_speed = car_stats[2]
-        self.handling = car_stats[3]
-
-        self.speed = 0
-        self.direction = 0
-        self.drift_offset = 30
-
-        self.name = name
-
-        self.marker = objects.Marker()
-
-        self.pressed_keys = []
-        
-        # mouse pos
-        self.mouse_x = 0
-        self.mouse_y = 0
-        
-        # movement keys
-        self.forward_key = arcade.key.W
-        self.break_key = arcade.key.S
-        self.left_key = arcade.key.A
-        self.right_key = arcade.key.D
-        self.drift_key = keybinds[0]
-    
-
-    def key_pressed(self, key, modifiers):
-        if key not in self.pressed_keys:
-            self.pressed_keys.append(key)
-
-        if key == arcade.key.SPACE:
-            print(edit_file.get_positions())
-
-        if key == self.drift_key:
-            self.top_speed *= 0.8
-            self.speed *= 0.8
-            self.acceleration *= 0.8
-            self.handling /= 0.8
-            
-            if self.left_key in self.pressed_keys and self.right_key not in self.pressed_keys:
-                self.player_sprite.angle += self.drift_offset
-            
-            elif self.left_key not in self.pressed_keys and self.right_key in self.pressed_keys:
-                self.player_sprite.angle -= self.drift_offset
-    
-
-    def key_released(self, key, modifiers):
-        if key in self.pressed_keys:
-            self.pressed_keys.remove(key)
-        
-        if key == self.drift_key:
-            self.top_speed /= 0.8
-            self.acceleration /= 0.8
-            self.handling *= 0.8
-            
-            self.direction = self.player_sprite.angle
-
-    def update(self, delta_time):
-
-        if self.forward_key in self.pressed_keys:
-            self.speed += self.acceleration * delta_time * 60
-            if self.speed > self.top_speed:
-                self.speed = self.top_speed
-        
-        if self.break_key in self.pressed_keys:
-            self.speed -= self.break_speed * delta_time * 60
-            if self.speed < 0:
-                self.speed = 0
-
-        if self.speed > 0:
-            if self.right_key in self.pressed_keys:
-                self.direction -= self.handling * delta_time * 60
-                self.player_sprite.angle -= self.handling * delta_time * 60
-            
-            if self.left_key in self.pressed_keys:
-                self.direction += self.handling * delta_time * 60
-                self.player_sprite.angle += self.handling * delta_time * 60
-
-        
-        # movement calculations
-
-        self.player_sprite.change_y = math.cos(math.radians(-self.direction)) * self.speed * delta_time * 60
-        self.player_sprite.change_x = math.sin(math.radians(-self.direction)) * self.speed * delta_time * 60
-
-        if self.speed > 0:
-            self.speed -= 0.05 * delta_time * 30
-            
-        
-        
-        
-    def draw(self):
-        self.player_sprite.draw(pixelated=True)
-
-        arcade.draw_text(self.name, self.player_sprite.center_x, self.player_sprite.center_y+40, arcade.color.WHITE, 12, anchor_x="center", font_name="Kenney Mini Square")
-        
-    
-class OtherPlayer():
-    def __init__(self, pos_x, pos_y, char_index, name):
-        
-        # player variables
-        self.char_index = char_index
-        self.player_sprite = arcade.Sprite()
-        self.player_sprite.texture = arcade.load_texture("sprites/sprite_sheet.png", x = 0, y = 32*self.char_index, width = 32, height = 32)
-        self.player_sprite.scale = 3
-        self.player_sprite.center_x = pos_x
-        self.player_sprite.center_y = pos_y
-
-        self.name = name
-        
-    def draw(self):
-        self.player_sprite.draw(pixelated=True)
-
-        arcade.draw_text(self.name, self.player_sprite.center_x, self.player_sprite.center_y+40, arcade.color.WHITE, 12, anchor_x="center", font_name="Kenney Mini Square")
 
 
 class MainMenu(arcade.View):
