@@ -17,7 +17,7 @@ import objects
 
 SCREEN_WIDTH, SCREEN_HEIGHT = arcade.window_commands.get_display_size()
 
-#SCREEN_WIDTH, SCREEN_HEIGHT = 1000, 1000
+#SCREEN_WIDTH, SCREEN_HEIGHT = 500, 500
 
 
 class Game(arcade.View):
@@ -134,9 +134,10 @@ class Game(arcade.View):
         
 
         #draw fps
-        arcade.draw_text(str(self.fps) + " fps", 100, SCREEN_HEIGHT-100, arcade.color.WHITE, 20, font_name="Kenney Mini Square")
-        arcade.draw_text(str(self.current_place), 200, 200, arcade.color.YELLOW, 80, font_name="Kenney Mini Square")
-        arcade.draw_text(self.laps_to_go_msg, 100, 100, arcade.color.YELLOW, 40, font_name="Kenney Mini Square")
+        arcade.draw_text(str(self.fps) + " fps", SCREEN_HEIGHT/10, 9*SCREEN_HEIGHT/10, arcade.color.WHITE, 20, font_name="Kenney Mini Square")
+        arcade.draw_text(str(self.current_place), SCREEN_HEIGHT/5, SCREEN_HEIGHT/5, arcade.color.YELLOW, SCREEN_HEIGHT/10, font_name="Kenney Mini Square")
+        #arcade.draw_text(self.laps_to_go_msg, SCREEN_WIDTH/2, 9*SCREEN_HEIGHT/10, arcade.color.YELLOW, SCREEN_HEIGHT/20, anchor_x="center", font_name="Kenney Mini Square")
+        arcade.draw_text(str(self.player.marker.int_for_sorting), SCREEN_WIDTH/2, 9*SCREEN_HEIGHT/10, arcade.color.YELLOW, SCREEN_HEIGHT/20, anchor_x="center", font_name="Kenney Mini Square")
 
         
         
@@ -185,7 +186,7 @@ class Game(arcade.View):
             elif self.player.marker.total_checkpoints == 56:
                 self.laps_to_go_msg = "Final lap!"
             elif self.player.marker.total_checkpoints == 84:
-                pass
+                self.player.marker.total_checkpoints += 1
         
 
 

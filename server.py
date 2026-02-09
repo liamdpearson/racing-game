@@ -66,6 +66,7 @@ def main():
     
     s.listen()
     print("Waiting for a connection, Server Started")
+    finished_players = []
     checkpoint_data = []
     all_init_data = []
     started = False
@@ -80,9 +81,12 @@ def main():
 
         while started == False:
             conn.send(str.encode(str(player) + " " + lis_to_str(all_init_data)))
-            data = conn.recv(2048).decode() # wait for client to recive data before sending again
-            if data == "start":
-                started = True
+            try:
+                data = conn.recv(2048).decode() # wait for client to recive data before sending again
+                if data == "start":
+                    started = True
+            except:
+                pass
         
         conn.send(str.encode(str(player) + " " + lis_to_str(all_init_data)+"start"))
 
@@ -92,6 +96,9 @@ def main():
                 data = read_pos(conn.recv(2048).decode())
                 pos[player] = data[:-1] # excludes int for sorting
                 checkpoint_data[player] = data[-1] # int for sorting
+
+                if checkpoint_data[player] >= 8500:
+                    finished_players.append(player)
 
                 players_ahead = 0
                 for i in checkpoint_data:
