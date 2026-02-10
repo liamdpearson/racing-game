@@ -78,7 +78,7 @@ def main():
         all_init_data.append(str(player) + conn.recv(2048).decode())
 
         conn.send(str.encode(make_pos(pos[player])))
-
+        
         while started == False:
             conn.send(str.encode(str(player) + " " + lis_to_str(all_init_data)))
             try:
@@ -86,7 +86,7 @@ def main():
                 if data == "start":
                     started = True
             except:
-                pass
+                print()
         
         conn.send(str.encode(str(player) + " " + lis_to_str(all_init_data)+"start"))
 
@@ -97,7 +97,7 @@ def main():
                 pos[player] = data[:-1] # excludes int for sorting
                 checkpoint_data[player] = data[-1] # int for sorting
 
-                if checkpoint_data[player] >= 8500:
+                if player not in finished_players and checkpoint_data[player] >= 8500:
                     finished_players.append(player)
 
                 players_ahead = 0
