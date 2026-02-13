@@ -344,10 +344,38 @@ class LobbyGuest(arcade.View):
 
         self.all_init_data = ""
         self.started = False
+    
+        # init gui manager
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+        
+        # Create a vertical BoxGroup to align buttons
+        self.v_box = arcade.gui.UIBoxLayout()
+
+        # Create the buttons
+        back_button = arcade.gui.UIFlatButton(text="Back to Menu", width=200, style=self.window.button_style)
+        self.v_box.add(back_button.with_space_around(bottom=20))
+
+        @back_button.event("on_click")
+        def on_click_settings(event):
+            self.manager.disable()
+            self.window.n = None
+            self.window.mainmenu = MainMenu()
+            self.window.show_view(self.window.mainmenu)
+
+        # Create a widget to hold the v_box widget, that will center the buttons
+        self.manager.add(
+            arcade.gui.UIAnchorWidget(
+                anchor_x="center_x",
+                anchor_y="center_y",
+                align_y = -SCREEN_HEIGHT/3,
+                child=self.v_box)
+            )
             
             
     def on_draw(self):
         arcade.start_render()
+        self.manager.draw()
 
         self.all_init_data = self.window.n.recv()
         if self.all_init_data[-5:] == "start":
@@ -380,6 +408,33 @@ class GetAddress(arcade.View):
                             arcade.key.PERIOD)
         
         self.server = ""
+
+
+        # init gui manager
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+        
+        # Create a vertical BoxGroup to align buttons
+        self.v_box = arcade.gui.UIBoxLayout()
+
+        # Create the buttons
+        back_button = arcade.gui.UIFlatButton(text="Back to Menu", width=200, style=self.window.button_style)
+        self.v_box.add(back_button.with_space_around(bottom=20))
+
+        @back_button.event("on_click")
+        def on_click_settings(event):
+            self.manager.disable()
+            self.window.mainmenu = MainMenu()
+            self.window.show_view(self.window.mainmenu)
+
+        # Create a widget to hold the v_box widget, that will center the buttons
+        self.manager.add(
+            arcade.gui.UIAnchorWidget(
+                anchor_x="center_x",
+                anchor_y="center_y",
+                align_y = -SCREEN_HEIGHT/3,
+                child=self.v_box)
+            )
         
     
     def on_key_press(self, key, modifiers):
@@ -398,6 +453,7 @@ class GetAddress(arcade.View):
     
     def on_draw(self):
         arcade.start_render()
+        self.manager.draw()
         
         arcade.draw_text("Host IPv4: " + self.server, SCREEN_WIDTH/2, SCREEN_HEIGHT/2, arcade.color.WHITE, 20, anchor_x="center", font_name="Kenney Mini Square")
 
