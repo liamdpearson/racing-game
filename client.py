@@ -137,8 +137,8 @@ class Game(arcade.View):
         #draw fps
         arcade.draw_text(str(self.fps) + " fps", SCREEN_HEIGHT/10, 9*SCREEN_HEIGHT/10, arcade.color.WHITE, 20, font_name="Kenney Mini Square")
         arcade.draw_text(str(self.current_place), SCREEN_HEIGHT/5, SCREEN_HEIGHT/5, arcade.color.YELLOW, SCREEN_HEIGHT/10, font_name="Kenney Mini Square")
-        #arcade.draw_text(self.laps_to_go_msg, SCREEN_WIDTH/2, 9*SCREEN_HEIGHT/10, arcade.color.YELLOW, SCREEN_HEIGHT/20, anchor_x="center", font_name="Kenney Mini Square")
-        arcade.draw_text(str(self.player.marker.int_for_sorting), SCREEN_WIDTH/2, 9*SCREEN_HEIGHT/10, arcade.color.YELLOW, SCREEN_HEIGHT/20, anchor_x="center", font_name="Kenney Mini Square")
+        arcade.draw_text(self.laps_to_go_msg, SCREEN_WIDTH/2, 9*SCREEN_HEIGHT/10, arcade.color.YELLOW, SCREEN_HEIGHT/20, anchor_x="center", font_name="Kenney Mini Square")
+        #arcade.draw_text(str(self.player.marker.int_for_sorting), SCREEN_WIDTH/2, 9*SCREEN_HEIGHT/10, arcade.color.YELLOW, SCREEN_HEIGHT/20, anchor_x="center", font_name="Kenney Mini Square")
 
         
         
@@ -225,7 +225,10 @@ class MainMenu(arcade.View):
         self.v_box.add(join_button.with_space_around(bottom=20))
 
         swap_button = arcade.gui.UIFlatButton(text="Edit Profile", width=200, style=self.window.button_style)
-        self.v_box.add(swap_button.with_space_around(bottom=20))    
+        self.v_box.add(swap_button.with_space_around(bottom=20))
+
+        quit_button = arcade.gui.UIFlatButton(text="Quit Game", width=200, style=self.window.button_style)
+        self.v_box.add(quit_button.with_space_around(bottom=20))
         
         
         @host_button.event("on_click")
@@ -250,7 +253,13 @@ class MainMenu(arcade.View):
         def on_click_settings(event):
             self.manager.disable()
             self.window.swapdata = SwapData()
-            self.window.show_view(self.window.swapdata)     
+            self.window.show_view(self.window.swapdata)
+
+        @quit_button.event("on_click")
+        def on_click_settings(event):
+            self.manager.disable()
+            self.window.done = True
+            self.window.close()  
         
         # Create a widget to hold the v_box widget, that will center the buttons
         self.manager.add(
@@ -318,11 +327,13 @@ class LobbyHost(arcade.View):
             self.window.n.send(" ")
         
         self.manager.draw()
-           
+
+        p_list = self.all_init_data.split()[1:]
+
+        for i in range(len(p_list)):
+            arcade.draw_text("Player " + str(i+1) + ": " + p_list[i][1:-1], SCREEN_WIDTH/2, 6 * SCREEN_HEIGHT/8-i*30, arcade.color.WHITE, 20, anchor_x="center", font_name="Kenney Mini Square")
 
         arcade.draw_text("Your IPv4: " + self.window.n.server, SCREEN_WIDTH/2, 7 * SCREEN_HEIGHT/8, arcade.color.WHITE, 20, anchor_x="center", font_name="Kenney Mini Square")
-        arcade.draw_text("Players: " + self.all_init_data, SCREEN_WIDTH/2, 6 * SCREEN_HEIGHT/8, arcade.color.WHITE, 20, anchor_x="center", font_name="Kenney Mini Square")
-
         
 
 
@@ -347,7 +358,10 @@ class LobbyGuest(arcade.View):
             self.window.n.send(" ")
 
 
-        arcade.draw_text("Players: " + self.all_init_data, SCREEN_WIDTH/2, 6 * SCREEN_HEIGHT/8, arcade.color.WHITE, 20, anchor_x="center", font_name="Kenney Mini Square")
+        p_list = self.all_init_data.split()[1:]
+
+        for i in range(len(p_list)):
+            arcade.draw_text("Player " + str(i+1) + ": " + p_list[i][1:-1], SCREEN_WIDTH/2, 6 * SCREEN_HEIGHT/8-i*30, arcade.color.WHITE, 20, anchor_x="center", font_name="Kenney Mini Square")
 
 
 class GetAddress(arcade.View):
@@ -393,13 +407,22 @@ class SwapData(arcade.View):
     def __init__(self):
         super().__init__()
 
-        self.editing_name = True # editing name = False means editing character id
-
         self.name = edit_file.get_name()
 
         self.character_id = edit_file.get_character_id()
 
-        self.viable_keys = (arcade.key.KEY_0, arcade.key.KEY_1, arcade.key.KEY_2)
+        self.car_sprites = []
+        for i in range(3):
+            sprite = arcade.Sprite(scale = 5)
+            sprite.center_x = SCREEN_WIDTH/2 + (i-1)*200
+            sprite.center_y = 5*SCREEN_HEIGHT/8
+            tex = arcade.load_texture("sprites/sprite_sheet.png", x = 0, y = 32*i, width = 32, height = 32)
+            sprite.texture = tex
+
+            self.car_sprites.append(sprite)
+        
+        self.circle_x = self.car_sprites[self.character_id].center_x
+        self.circle_y = 5*SCREEN_HEIGHT/8
 
         # init gui manager
         self.manager = arcade.gui.UIManager()
@@ -425,50 +448,41 @@ class SwapData(arcade.View):
             arcade.gui.UIAnchorWidget(
                 anchor_x="center_x",
                 anchor_y="center_y",
-                align_y = -SCREEN_HEIGHT/6,
+                align_y = -SCREEN_HEIGHT/3,
                 child=self.v_box)
             )
 
     def on_key_press(self, key, modifiers):
 
-        if key == arcade.key.DOWN:
-            self.editing_name = False
-
-        elif key == arcade.key.UP:
-            self.editing_name = True
-
-
-        elif self.editing_name == True:
-            if key == arcade.key.BACKSPACE:
-                self.name = self.name[:-1]
-            elif key == arcade.key.SPACE:
-                self.name += "_"
-            else:
-                if len(self.name) < 20:
-                    char = chr(key)
-                    if char.isalnum():
-                        self.name += char
-
-        elif self.editing_name == False:
-            if key in self.viable_keys:
-                self.character_id = int(chr(key))
+        if key == arcade.key.BACKSPACE:
+            self.name = self.name[:-1]
+        elif key == arcade.key.SPACE:
+            self.name += "_"
+        else:
+            if len(self.name) < 20:
+                char = chr(key)
+                if char.isalnum():
+                    self.name += char
+    
+    def on_mouse_press(self, x, y, button, modifiers):
+        for i in range(3):
+            if self.car_sprites[i].collides_with_point((x,y)):
+                self.character_id = i
+                edit_file.swap_character_id(i)
+                self.circle_x = self.car_sprites[i].center_x
                 
     def on_draw(self):
         arcade.start_render()
         self.manager.draw()
 
         arcade.draw_text("Your  Name: " + self.name, SCREEN_WIDTH/2,
-                        6 * SCREEN_HEIGHT/8, arcade.color.WHITE, 20, 
-                        anchor_x="center", font_name="Kenney Mini Square", bold=self.editing_name)
-
-        arcade.draw_text("Your Character ID: " + str(self.character_id), SCREEN_WIDTH/2,
-                        5 * SCREEN_HEIGHT/8, arcade.color.WHITE, 20, 
-                        anchor_x="center", font_name="Kenney Mini Square", bold=not self.editing_name)
-        
-
-        arcade.draw_text("Arrow Keys to Swap", SCREEN_WIDTH/2,
-                        4 * SCREEN_HEIGHT/8, arcade.color.WHITE, 20, 
+                        7 * SCREEN_HEIGHT/8, arcade.color.WHITE, 20, 
                         anchor_x="center", font_name="Kenney Mini Square")
+        
+        arcade.draw_rectangle_outline(self.circle_x, self.circle_y, 140,200, arcade.color.WHITE)
+        
+        for car in self.car_sprites:
+            car.draw(pixelated=True)
 
 
 class GameWindow(arcade.Window):
