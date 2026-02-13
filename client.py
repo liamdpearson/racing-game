@@ -7,6 +7,7 @@ import arcade # type: ignore
 import arcade.gui # type: ignore
 import threading
 import socket
+import time
 
 from network import Network
 import server
@@ -233,7 +234,9 @@ class MainMenu(arcade.View):
             self.init_data = edit_file.get_name() + str(edit_file.get_character_id())
             self.window.server_thread = threading.Thread(target=server.main)
             self.window.server_thread.start()
-            self.window.n = Network(self.window.server, self.init_data)
+            self.window.n = Network(self.init_data)
+            self.window.n.set_server(self.window.server)
+            self.window.n.connect()
             self.window.lobby = LobbyHost()
             self.window.show_view(self.window.lobby)
             
@@ -353,6 +356,7 @@ class GetAddress(arcade.View):
         super().__init__()
 
         self.init_data = edit_file.get_name() + str(edit_file.get_character_id())
+        self.window.n = Network(self.init_data)
         
         self.viable_keys = (arcade.key.KEY_0, arcade.key.KEY_1,
                             arcade.key.KEY_2, arcade.key.KEY_3,
@@ -370,15 +374,17 @@ class GetAddress(arcade.View):
         elif key == arcade.key.BACKSPACE:
             self.server = self.server[:-1]
         elif key == arcade.key.ENTER:
-            try:
-                self.window.n = Network(self.server, self.init_data)
+            self.window.n.set_server(self.server)
+            a = self.window.n.connect()
+            if a:               
                 self.window.lobby = LobbyGuest()
                 self.window.show_view(self.window.lobby)
-            except:
+            else:
                 self.server = "invalid ip"
     
     def on_draw(self):
         arcade.start_render()
+        
         arcade.draw_text("Host IPv4: " + self.server, SCREEN_WIDTH/2, SCREEN_HEIGHT/2, arcade.color.WHITE, 20, anchor_x="center", font_name="Kenney Mini Square")
 
 
