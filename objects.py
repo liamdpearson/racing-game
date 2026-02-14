@@ -118,33 +118,34 @@ class Player():
     def update(self, delta_time):
 
         self.marker.check_distance(self.player_sprite.center_x, self.player_sprite.center_y)
+        multiplier = delta_time * 60
 
         # movement calculations
         if self.forward_key in self.pressed_keys:
-            self.speed += self.acceleration * delta_time * 60
+            self.speed += self.acceleration * multiplier
             if self.speed > self.top_speed:
                 self.speed = self.top_speed
         
         if self.break_key in self.pressed_keys:
-            self.speed -= self.break_speed * delta_time * 60
+            self.speed -= self.break_speed * multiplier
             if self.speed < 0:
                 self.speed = 0
 
         if self.speed > 0:
             if self.right_key in self.pressed_keys:
-                self.direction -= self.handling * delta_time * 60
-                self.player_sprite.angle -= self.handling * delta_time * 60
+                self.direction -= self.handling * multiplier
+                self.player_sprite.angle -= self.handling * multiplier
             
             if self.left_key in self.pressed_keys:
-                self.direction += self.handling * delta_time * 60
-                self.player_sprite.angle += self.handling * delta_time * 60
+                self.direction += self.handling * multiplier
+                self.player_sprite.angle += self.handling * multiplier
         
 
-        self.player_sprite.change_y = math.cos(math.radians(-self.direction)) * self.speed * delta_time * 60
-        self.player_sprite.change_x = math.sin(math.radians(-self.direction)) * self.speed * delta_time * 60
+        self.player_sprite.change_y = math.cos(math.radians(-self.direction)) * self.speed * multiplier
+        self.player_sprite.change_x = math.sin(math.radians(-self.direction)) * self.speed * multiplier
 
         if self.speed > 0:
-            self.speed -= 0.05 * delta_time * 30
+            self.speed -= 0.05 * multiplier
             
         
         

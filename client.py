@@ -16,9 +16,9 @@ import objects
 
 
 
-SCREEN_WIDTH, SCREEN_HEIGHT = arcade.window_commands.get_display_size()
+#SCREEN_WIDTH, SCREEN_HEIGHT = arcade.window_commands.get_display_size()
 
-#SCREEN_WIDTH, SCREEN_HEIGHT = 500, 500
+SCREEN_WIDTH, SCREEN_HEIGHT = 1000, 1000
 
 
 class Game(arcade.View):
@@ -82,7 +82,7 @@ class Game(arcade.View):
         self.player = objects.Player(self.start_pos[0], self.start_pos[1], self.car_stats[self.char_index], [arcade.key.LSHIFT], self.char_index, self.name)
 
         for player in self.other_players_data:
-            self.other_players.append(objects.OtherPlayer(500, 500, int(player[-1]), player[1:-1]))
+            self.other_players.append(objects.OtherPlayer(0, 0, int(player[-1]), player[1:-1]))
         
         # setup cameras
         self.camera = arcade.Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -318,16 +318,18 @@ class LobbyHost(arcade.View):
     def on_draw(self):
         arcade.start_render()
 
-        self.all_init_data = self.window.n.recv()
-        if self.all_init_data[-5:] == "start":
-            self.window.game = Game(self.all_init_data[:-5])
-            self.window.show_view(self.window.game)
-
         if self.started == True:
             self.window.n.send("start")
             self.started = None
         if self.started == False:
             self.window.n.send(" ")
+
+        self.all_init_data = self.window.n.recv()
+        if self.all_init_data[-5:] == "start":
+            self.window.game = Game(self.all_init_data[:-5])
+            self.window.show_view(self.window.game)
+
+        
         
         self.manager.draw()
 
@@ -380,13 +382,15 @@ class LobbyGuest(arcade.View):
         arcade.start_render()
         self.manager.draw()
 
-        self.all_init_data = self.window.n.recv()
+        
+        if self.started == False:
+            self.window.n.send(" ")
+            self.all_init_data = self.window.n.recv()
+
         if self.all_init_data[-5:] == "start":
             self.started = True
             self.window.game = Game(self.all_init_data[:-5])
             self.window.show_view(self.window.game)
-        if self.started == False:
-            self.window.n.send(" ")
 
 
         p_list = self.all_init_data.split()[1:]
@@ -515,10 +519,10 @@ class SwapData(arcade.View):
 
         if key == arcade.key.BACKSPACE:
             self.name = self.name[:-1]
-        elif key == arcade.key.SPACE:
-            self.name += "_"
-        else:
-            if len(self.name) < 20:
+        if len(self.name) < 20:
+            if key == arcade.key.SPACE:
+                self.name += "_"
+            else:
                 char = chr(key)
                 if char.isalnum():
                     self.name += char
@@ -548,7 +552,7 @@ class GameWindow(arcade.Window):
     """ Main Window """
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT)
-        self.set_location(0,0)
+        self.set_location(100,100)
         self.set_fullscreen(False)
 
         arcade.set_background_color(arcade.color.BLACK)
