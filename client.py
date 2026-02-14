@@ -168,17 +168,20 @@ class Game(arcade.View):
         
         
         if self.window.n.all_data:
-            self.current_place = int(self.window.n.all_data[-1])
-            self.all_positions = self.window.n.all_data[:-1].split()
-            del self.all_positions[self.player_index]
-            if self.all_positions:
-                for i in range(len(self.all_positions)):
-                        data = read_pos(self.all_positions[i])
-                        if len(data) == 3:
-                            player = self.other_players[i]
-                            player.player_sprite.center_x = data[0]
-                            player.player_sprite.center_y = data[1]
-                            player.player_sprite.angle = data[2]
+            if self.window.n.all_data[0] == "f":
+                finished_players = self.window.n.all_data[1:]
+            else:
+                self.current_place = int(self.window.n.all_data[-1])
+                self.all_positions = self.window.n.all_data[:-1].split()
+                del self.all_positions[self.player_index]
+                if self.all_positions:
+                    for i in range(len(self.all_positions)):
+                            data = read_pos(self.all_positions[i])
+                            if len(data) == 3:
+                                player = self.other_players[i]
+                                player.player_sprite.center_x = data[0]
+                                player.player_sprite.center_y = data[1]
+                                player.player_sprite.angle = data[2]
 
         # finish line check
         if arcade.check_for_collision_with_list(self.player.player_sprite, self.finishline):

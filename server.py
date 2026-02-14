@@ -73,52 +73,68 @@ def main():
     # x, y, head_angle, legs_angle, anim_index, char_index
     pos = []
     def threaded_client(conn, player):
-        nonlocal started
+
+        def lobby_loop():
+            nonlocal started
+            while started == False:
+                conn.send(str.encode(str(player) + " " + lis_to_str(all_init_data)))
+                try:
+                    data = conn.recv(2048).decode() # wait for client to recive data before sending again
+                    if data == "start":
+                        started = True
+                        conn.send(str.encode(str(player) + " " + lis_to_str(all_init_data)+"start"))
+                        game_loop()
+                        break
+                except:
+                    break
+        
+            
+        
+        def game_loop():
+            reply = ""
+            while True:
+                try:
+                    data = read_pos(conn.recv(2048).decode())
+                    pos[player] = data[:-1] # excludes int for sorting
+                    checkpoint_data[player] = data[-1] # int for sorting
+
+                    if checkpoint_data[player] >= 8500:
+                        if player not in finished_players:
+                            finished_players.append(player)
+                            if len(finished_players) == currentPlayer:
+                                s = ""
+                                for i in finished_players:
+                                    s = s + str(i)
+                                conn.send(str.encode("f"+s))
+                                lobby_loop()
+                                break
+
+                    players_ahead = 0
+                    for i in checkpoint_data:
+                        if i > checkpoint_data[player]:
+                            players_ahead += 1
+
+                    
+
+                    
+                    if not data:
+                        print("Disconnected")
+                        break
+                    else:
+                        reply = convert_pos(pos) + str(1+players_ahead)
+                            
+                        #print("Received: ", data)
+                        #print("Sending: ", reply)
+                    conn.sendall(str.encode(reply))
+                except:
+                    break
 
         all_init_data.append(str(player) + conn.recv(2048).decode())
 
         conn.send(str.encode(make_pos(pos[player])))
+
+        lobby_loop()
         
-        while started == False:
-            conn.send(str.encode(str(player) + " " + lis_to_str(all_init_data)))
-            try:
-                data = conn.recv(2048).decode() # wait for client to recive data before sending again
-                if data == "start":
-                    started = True
-            except:
-                print()
-        
-        conn.send(str.encode(str(player) + " " + lis_to_str(all_init_data)+"start"))
-
-        reply = ""
-        while True:
-            try:
-                data = read_pos(conn.recv(2048).decode())
-                pos[player] = data[:-1] # excludes int for sorting
-                checkpoint_data[player] = data[-1] # int for sorting
-
-                if player not in finished_players and checkpoint_data[player] >= 8500:
-                    finished_players.append(player)
-
-                players_ahead = 0
-                for i in checkpoint_data:
-                    if i > checkpoint_data[player]:
-                        players_ahead += 1
-
-                
-
-                
-                if not data:
-                    print("Disconnected")
-                    break
-                else:
-                    reply = convert_pos(pos) + str(1+players_ahead)
-                        
-                    #print("Received: ", data)
-                    #print("Sending: ", reply)
-                conn.sendall(str.encode(reply))
-            except:
-                break
             
         print("Lost connection")
         conn.close()
