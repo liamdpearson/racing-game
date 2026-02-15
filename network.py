@@ -5,6 +5,7 @@ class Network:
     def __init__(self, init_data):
         self.init_data = init_data
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.client.settimeout(3)
         self.server = ""
         self.port = 5555
         self.addr = ("", self.port)
@@ -28,7 +29,9 @@ class Network:
             
             self.p_data = self.client.recv(2048).decode()
             return True
-        except:
+        
+        except Exception as e:
+            print("Could not connect:", e)
             return False
         
     def update(self):

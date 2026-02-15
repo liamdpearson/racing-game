@@ -16,9 +16,9 @@ import objects
 
 
 
-#SCREEN_WIDTH, SCREEN_HEIGHT = arcade.window_commands.get_display_size()
+SCREEN_WIDTH, SCREEN_HEIGHT = arcade.window_commands.get_display_size()
 
-SCREEN_WIDTH, SCREEN_HEIGHT = 1000, 1000
+#SCREEN_WIDTH, SCREEN_HEIGHT = 1000, 1000
 
 
 class Game(arcade.View):
@@ -37,10 +37,10 @@ class Game(arcade.View):
         self.player_index = int(self.all_init_data[0])
         self.players = self.all_init_data[1:]
         self.player_data = self.players[self.player_index]
-        self.other_players_data = [player for player in self.players if int(player[0]) != self.player_index]
+        self.other_players_data = self.players[:self.player_index] + self.players[self.player_index+1:]
 
         self.char_index = int(self.player_data[-1])
-        self.name = self.player_data[1:-1]
+        self.name = self.player_data[:-1]
         
         self.all_positions = None
         
@@ -82,7 +82,7 @@ class Game(arcade.View):
         self.player = objects.Player(self.start_pos[0], self.start_pos[1], self.car_stats[self.char_index], [arcade.key.LSHIFT], self.char_index, self.name)
 
         for player in self.other_players_data:
-            self.other_players.append(objects.OtherPlayer(0, 0, int(player[-1]), player[1:-1]))
+            self.other_players.append(objects.OtherPlayer(0, 0, int(player[-1]), player[:-1]))
         
         # setup cameras
         self.camera = arcade.Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -168,8 +168,12 @@ class Game(arcade.View):
         
         
         if self.window.n.all_data:
-            if self.window.n.all_data[0] == "f":
-                finished_players = self.window.n.all_data[1:]
+            if self.window.n.all_data[-1] == "f":
+                finished_players = self.window.n.all_data.split()[-1][:-1]
+                self.window.done = True
+                self.window.n = None
+                self.endscreen = EndScreen(finished_players, self.players)
+                self.window.show_view(self.endscreen)
             else:
                 self.current_place = int(self.window.n.all_data[-1])
                 self.all_positions = self.window.n.all_data[:-1].split()
@@ -206,6 +210,52 @@ class Game(arcade.View):
         #self.player.mouse_x, self.player.mouse_y = x-SCREEN_WIDTH/2, y-SCREEN_HEIGHT/2
 
 
+class EndScreen(arcade.View):
+    """ Menu class to host and connect """
+    def __init__(self, order, players):
+        super().__init__()
+    
+        self.order = order
+        self.players = players
+        
+        # init gui manager
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+        
+        # Create a vertical BoxGroup to align buttons
+        self.v_box = arcade.gui.UIBoxLayout()
+
+        # Create the buttons
+        mainmenu_button = arcade.gui.UIFlatButton(text="Main Menu", width=200, style=self.window.button_style)
+        self.v_box.add(mainmenu_button.with_space_around(bottom=20))
+        
+            
+        @mainmenu_button.event("on_click")
+        def on_click_settings(event):
+            self.manager.disable()
+            self.window.done = False
+            self.window.mainmenu = MainMenu()
+            self.window.show_view(self.window.mainmenu)
+            
+        
+        # Create a widget to hold the v_box widget, that will center the buttons
+        self.manager.add(
+            arcade.gui.UIAnchorWidget(
+                anchor_x="center_x",
+                anchor_y="center_y",
+                align_y = -SCREEN_HEIGHT/6,
+                child=self.v_box)
+            )
+            
+            
+    def on_draw(self):
+        arcade.start_render()
+        self.manager.draw()
+
+        for i in range(len(self.order)):
+            arcade.draw_text(str(i+1) + " " + self.players[int(self.order[i])][:-1], SCREEN_WIDTH/2, 5 * SCREEN_HEIGHT/8 - 30*i, arcade.color.WHITE, 20, anchor_x="center", font_name="Kenney Mini Square")
+
+
 class MainMenu(arcade.View):
     """ Menu class to host and connect """
     def __init__(self):
@@ -238,11 +288,12 @@ class MainMenu(arcade.View):
         def on_click_settings(event):
             self.manager.disable()
             self.init_data = edit_file.get_name() + str(edit_file.get_character_id())
-            self.window.server_thread = threading.Thread(target=server.main)
+            self.window.server_thread = threading.Thread(target=server.main, daemon = True)
             self.window.server_thread.start()
             self.window.n = Network(self.init_data)
             self.window.n.set_server(self.window.server)
             self.window.n.connect()
+            self.window.hosting = True
             self.window.lobby = LobbyHost()
             self.window.show_view(self.window.lobby)
             
@@ -325,18 +376,24 @@ class LobbyHost(arcade.View):
             self.window.n.send(" ")
 
         self.all_init_data = self.window.n.recv()
+        lis = self.all_init_data.split("|")
+        self.window.n.p_data = lis[0]
+        self.all_init_data = lis[1]
+
         if self.all_init_data[-5:] == "start":
             self.window.game = Game(self.all_init_data[:-5])
             self.window.show_view(self.window.game)
-
-        
         
         self.manager.draw()
 
-        p_list = self.all_init_data.split()[1:]
+        data = self.all_init_data.split()
+        p_list = data[1:]
+        player_index = int(data[0])
+
+        arcade.draw_text("You are player " + str(player_index+1), SCREEN_WIDTH/2, 6.5 * SCREEN_HEIGHT/8, arcade.color.WHITE, 20, anchor_x="center", font_name="Kenney Mini Square")
 
         for i in range(len(p_list)):
-            arcade.draw_text("Player " + str(i+1) + ": " + p_list[i][1:-1], SCREEN_WIDTH/2, 6 * SCREEN_HEIGHT/8-i*30, arcade.color.WHITE, 20, anchor_x="center", font_name="Kenney Mini Square")
+            arcade.draw_text("Player " + str(i+1) + ": " + p_list[i][:-1], SCREEN_WIDTH/2, 6 * SCREEN_HEIGHT/8-i*30, arcade.color.WHITE, 20, anchor_x="center", font_name="Kenney Mini Square")
 
         arcade.draw_text("Your IPv4: " + self.window.n.server, SCREEN_WIDTH/2, 7 * SCREEN_HEIGHT/8, arcade.color.WHITE, 20, anchor_x="center", font_name="Kenney Mini Square")
         
@@ -387,16 +444,22 @@ class LobbyGuest(arcade.View):
             self.window.n.send(" ")
             self.all_init_data = self.window.n.recv()
 
+        lis = self.all_init_data.split("|")
+        self.window.n.p_data = lis[0]
+        self.all_init_data = lis[1]
+
         if self.all_init_data[-5:] == "start":
             self.started = True
             self.window.game = Game(self.all_init_data[:-5])
             self.window.show_view(self.window.game)
 
+        data = self.all_init_data.split()
+        p_list = data[1:]
+        player_index = int(data[0])
 
-        p_list = self.all_init_data.split()[1:]
-
+        arcade.draw_text("You are player " + str(player_index+1), SCREEN_WIDTH/2, 6.5 * SCREEN_HEIGHT/8, arcade.color.WHITE, 20, anchor_x="center", font_name="Kenney Mini Square")
         for i in range(len(p_list)):
-            arcade.draw_text("Player " + str(i+1) + ": " + p_list[i][1:-1], SCREEN_WIDTH/2, 6 * SCREEN_HEIGHT/8-i*30, arcade.color.WHITE, 20, anchor_x="center", font_name="Kenney Mini Square")
+            arcade.draw_text("Player " + str(i+1) + ": " + p_list[i][:-1], SCREEN_WIDTH/2, 6 * SCREEN_HEIGHT/8-i*30, arcade.color.WHITE, 20, anchor_x="center", font_name="Kenney Mini Square")
 
 
 class GetAddress(arcade.View):
@@ -552,7 +615,7 @@ class GameWindow(arcade.Window):
     """ Main Window """
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT)
-        self.set_location(100,100)
+        self.set_location(0,0)
         self.set_fullscreen(False)
 
         arcade.set_background_color(arcade.color.BLACK)
