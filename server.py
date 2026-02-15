@@ -101,7 +101,7 @@ def main():
             checkpoint_data[player] = data[-1] # int for sorting
             nonlocal finished_players
 
-            if checkpoint_data[player] >= 100:
+            if checkpoint_data[player] >= 8500:
                 if str(player) not in finished_players:
                     finished_players += str(player)
 
