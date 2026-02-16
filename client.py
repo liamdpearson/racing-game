@@ -621,7 +621,7 @@ class GameWindow(arcade.Window):
     """ Main Window """
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT)
-        self.set_location(100,100)
+        self.set_location(0,0)
         self.set_fullscreen(False)
 
         arcade.set_background_color(arcade.color.BLACK)
