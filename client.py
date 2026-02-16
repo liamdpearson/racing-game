@@ -7,7 +7,6 @@ import arcade # type: ignore
 import arcade.gui # type: ignore
 import threading
 import socket
-import time
 
 from network import Network
 import server
