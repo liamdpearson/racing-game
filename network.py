@@ -38,8 +38,9 @@ class Network:
         try:
             self.client.send(str.encode(self.p_data))
             self.all_data = self.client.recv(2048).decode()
+            return True
         except socket.error as e:
-            print(e)
+            return False
 
     def send(self, data):
         self.client.send(str.encode(data))

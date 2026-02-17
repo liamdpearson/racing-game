@@ -71,11 +71,12 @@ def main():
     all_init_data = []
     started = False
     player_refs = []
+    all_finished = False
 
     # x, y, head_angle, legs_angle, anim_index, char_index
     pos = []
     def threaded_client(conn, player_ref):
-        nonlocal connected_players
+        nonlocal connected_players, all_finished
         player = player_ref[0]
 
         def lobby_loop(data):
@@ -99,10 +100,11 @@ def main():
             player = player_ref[0]
             pos[player] = data[:-1] # excludes int for sorting
             checkpoint_data[player] = data[-1] # int for sorting
-            nonlocal finished_players
+            nonlocal finished_players, all_finished
 
-            if checkpoint_data[player] >= 8500:
+            if checkpoint_data[player] >= 100:
                 if str(player) not in finished_players:
+                    print(player, "finished")
                     finished_players += str(player)
 
             players_ahead = 0
@@ -112,7 +114,10 @@ def main():
 
             reply = convert_pos(pos) + str(1+players_ahead)
 
-            if len(finished_players) == players_in_game:
+            if len(finished_players) == connected_players:
+                all_finished = True
+
+            if all_finished:
                 reply = reply + " " + finished_players + "f"
             #print("Received: ", data)
             #print("Sending: ", reply)

@@ -16,9 +16,9 @@ import objects
 
 
 
-SCREEN_WIDTH, SCREEN_HEIGHT = arcade.window_commands.get_display_size()
+#SCREEN_WIDTH, SCREEN_HEIGHT = arcade.window_commands.get_display_size()
 
-#SCREEN_WIDTH, SCREEN_HEIGHT = 500, 500
+SCREEN_WIDTH, SCREEN_HEIGHT = 500, 500
 
 
 class Game(arcade.View):
@@ -99,8 +99,11 @@ class Game(arcade.View):
     
     def listen_for_updates(self):
         while self.window.done == False:
-            self.window.n.update()
-            #print("listening")
+            if not self.window.n.update():
+                self.window.n = None
+                self.window.mainmenu = MainMenu()
+                self.window.show_view(self.window.mainmenu)
+                self.window.done = True
             
         print("listening stopped")
         return None
@@ -160,11 +163,12 @@ class Game(arcade.View):
         
         self.camera.move_to((cam_pos_x, cam_pos_y))
         
-        self.window.n.p_data = make_pos((self.player.player_sprite.center_x,
-                                         self.player.player_sprite.center_y,
-                                         self.player.player_sprite.angle,
-                                         self.player.marker.int_for_sorting
-                                         ))
+        if self.window.n:
+            self.window.n.p_data = make_pos((self.player.player_sprite.center_x,
+                                            self.player.player_sprite.center_y,
+                                            self.player.player_sprite.angle,
+                                            self.player.marker.int_for_sorting
+                                            ))
         
         
         if self.window.n.all_data:
@@ -438,11 +442,16 @@ class LobbyGuest(arcade.View):
     def on_draw(self):
         arcade.start_render()
         self.manager.draw()
-
         
         if self.started == False:
             self.window.n.send(" ")
-            self.all_init_data = self.window.n.recv()
+            try:
+                self.all_init_data = self.window.n.recv()
+            except:
+                self.window.n = None
+                self.window.mainmenu = MainMenu()
+                self.window.show_view(self.window.mainmenu)
+                return
 
         lis = self.all_init_data.split("|")
         self.window.n.p_data = lis[0]
@@ -615,7 +624,7 @@ class GameWindow(arcade.Window):
     """ Main Window """
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT)
-        self.set_location(0,0)
+        self.set_location(100,100)
         self.set_fullscreen(False)
 
         arcade.set_background_color(arcade.color.BLACK)
