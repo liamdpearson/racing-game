@@ -48,12 +48,6 @@ class Game(arcade.View):
 
         #top speed, acceleration, break_speed, handling
         self.car_stats = ((17, 0.1, 0.2, 2), (16, 0.15, 0.25, 2.25), (16.5, 0.125, 0.225, 2.125))
-
-        self.place_color = {1 : arcade.color.GOLD,
-                             2 : arcade.color.SILVER,
-                               3: arcade.color.BRONZE,
-                                 4: arcade.color.GRAY,
-                                   5: arcade.color.GRAY}
         
         self.tile_map = None
         self.wall_list = None
@@ -142,7 +136,7 @@ class Game(arcade.View):
         #draw fps
         arcade.draw_text(str(self.fps) + " fps", 15, SCREEN_HEIGHT-35, arcade.color.WHITE, 20, font_name="Kenney Mini Square")
         arcade.draw_text(str(self.current_place), SCREEN_HEIGHT/10 + 5, SCREEN_HEIGHT/10 - 5, arcade.color.EERIE_BLACK, SCREEN_HEIGHT/10, font_name="Kenney Blocks")
-        arcade.draw_text(str(self.current_place), SCREEN_HEIGHT/10, SCREEN_HEIGHT/10, self.place_color[self.current_place], SCREEN_HEIGHT/10, font_name="Kenney Blocks")
+        arcade.draw_text(str(self.current_place), SCREEN_HEIGHT/10, SCREEN_HEIGHT/10, self.window.place_colors[self.current_place], SCREEN_HEIGHT/10, font_name="Kenney Blocks")
         arcade.draw_text(self.laps_to_go_msg, SCREEN_WIDTH/2, 24*SCREEN_HEIGHT/25, arcade.color.WHITE, SCREEN_HEIGHT/30, anchor_x="center", font_name="Kenney Mini Square")
         #arcade.draw_text(str(self.player.marker.int_for_sorting), SCREEN_WIDTH/2, 9*SCREEN_HEIGHT/10, arcade.color.YELLOW, SCREEN_HEIGHT/20, anchor_x="center", font_name="Kenney Mini Square")
 
@@ -259,7 +253,7 @@ class EndScreen(arcade.View):
         self.manager.draw()
 
         for i in range(len(self.order)):
-            arcade.draw_text(str(i+1) + " " + self.players[int(self.order[i])][:-1], SCREEN_WIDTH/2, 5 * SCREEN_HEIGHT/8 - 30*i, arcade.color.WHITE, 20, anchor_x="center", font_name="Kenney Mini Square")
+            arcade.draw_text(str(i+1) + ". " + self.players[int(self.order[i])][:-1], SCREEN_WIDTH/2, 3 * SCREEN_HEIGHT/4 - 50*i, self.window.place_colors[i+1], 40, anchor_x="center", font_name="Kenney Mini Square")
 
 
 class MainMenu(arcade.View):
@@ -629,6 +623,12 @@ class GameWindow(arcade.Window):
         self.button_style = {"font_name" : "Kenney Pixel", "font_size" : 30}
         
         self.done = False
+
+        self.place_colors = {1 : arcade.color.GOLD,
+                             2 : arcade.color.SILVER,
+                               3: arcade.color.BRONZE,
+                                 4: arcade.color.GRAY,
+                                   5: arcade.color.GRAY}
         
     def on_close(self):
         self.done = True
