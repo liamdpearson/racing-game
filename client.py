@@ -7,7 +7,6 @@ import arcade # type: ignore
 import arcade.gui # type: ignore
 import threading
 import socket
-import math
 
 from network import Network
 import server
@@ -16,9 +15,9 @@ import objects
 
 
 
-#SCREEN_WIDTH, SCREEN_HEIGHT = arcade.window_commands.get_display_size()
+SCREEN_WIDTH, SCREEN_HEIGHT = arcade.window_commands.get_display_size()
 
-SCREEN_WIDTH, SCREEN_HEIGHT = 500, 500
+#SCREEN_WIDTH, SCREEN_HEIGHT = 500, 500
 
 
 class Game(arcade.View):
@@ -333,6 +332,9 @@ class MainMenu(arcade.View):
         arcade.start_render()
         self.manager.draw()
 
+        arcade.draw_text("Version Alpha 1.0", SCREEN_WIDTH/50, SCREEN_HEIGHT/25, arcade.color.WHITE, SCREEN_WIDTH/100, font_name="Kenney Mini Square")
+        arcade.draw_text("Racing Game", SCREEN_WIDTH/2, 3*SCREEN_HEIGHT/4, arcade.color.WHITE, SCREEN_WIDTH/20, anchor_x="center", font_name="Kenney Mini Square")
+
 
 class LobbyHost(arcade.View):
     """ lobby menu for the host """
@@ -353,7 +355,16 @@ class LobbyHost(arcade.View):
         # Create the buttons
         start_button = arcade.gui.UIFlatButton(text="Start", width=200, style=self.window.button_style)
         self.v_box.add(start_button.with_space_around(bottom=20))
-        
+
+        back_button = arcade.gui.UIFlatButton(text="Back to Menu", width=200, style=self.window.button_style)
+        self.v_box.add(back_button.with_space_around(bottom=20))
+
+        @back_button.event("on_click")
+        def on_click_settings(event):
+            self.manager.disable()
+            self.window.n = None
+            self.window.mainmenu = MainMenu()
+            self.window.show_view(self.window.mainmenu)
         
         @start_button.event("on_click")
         def on_click_settings(event):
@@ -365,7 +376,7 @@ class LobbyHost(arcade.View):
             arcade.gui.UIAnchorWidget(
                 anchor_x="center_x",
                 anchor_y="center_y",
-                align_y = -SCREEN_HEIGHT/6,
+                align_y = -SCREEN_HEIGHT/3,
                 child=self.v_box)
             )
             
@@ -551,7 +562,7 @@ class SwapData(arcade.View):
             sprite = arcade.Sprite(scale = 5)
             sprite.center_x = SCREEN_WIDTH/2 + (i-1)*200
             sprite.center_y = 5*SCREEN_HEIGHT/8
-            tex = arcade.load_texture("sprites/sprite_sheet.png", x = 32*i, y = 0, width = 32, height = 68)
+            tex = arcade.load_texture("sprites/sprite_sheet.png", x = 32*i, y = 0, width = 32, height = 71)
             sprite.texture = tex
 
             self.car_sprites.append(sprite)
@@ -624,7 +635,7 @@ class GameWindow(arcade.Window):
     """ Main Window """
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT)
-        self.set_location(100,100)
+        self.set_location(0,0)
         self.set_fullscreen(False)
 
         arcade.set_background_color(arcade.color.BLACK)

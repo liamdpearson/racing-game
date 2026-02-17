@@ -72,11 +72,12 @@ def main():
     started = False
     player_refs = []
     all_finished = False
+    host_left = False
 
     # x, y, head_angle, legs_angle, anim_index, char_index
     pos = []
     def threaded_client(conn, player_ref):
-        nonlocal connected_players, all_finished
+        nonlocal connected_players, all_finished, host_left
         player = player_ref[0]
 
         def lobby_loop(data):
@@ -102,9 +103,8 @@ def main():
             checkpoint_data[player] = data[-1] # int for sorting
             nonlocal finished_players, all_finished
 
-            if checkpoint_data[player] >= 100:
+            if checkpoint_data[player] >= 8500:
                 if str(player) not in finished_players:
-                    print(player, "finished")
                     finished_players += str(player)
 
             players_ahead = 0
@@ -142,9 +142,14 @@ def main():
                     game_loop(read_pos(data))
             except:
                 break
+            
+            if host_left:
+                break
 
         if started == False:
             leaving_player = player_ref[0]
+            if leaving_player == 0:
+                host_left = True
 
             pos.pop(leaving_player)
             checkpoint_data.pop(leaving_player)
@@ -159,7 +164,7 @@ def main():
                 pos[i] = (300+75*i,2580,0)
             
         
-
+        print("Player " + str(player_ref[0]+1) + " disconnected")
         connected_players -= 1
         conn.close()
     
@@ -183,7 +188,7 @@ def main():
         except socket.timeout:
             pass
             
-        if started == True and connected_players == 0:
+        if (started and connected_players == 0) or host_left:
             print("Closed server")
             break
         
