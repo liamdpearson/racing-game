@@ -52,8 +52,8 @@ class Player():
         # player variables
         self.char_index = char_index
         self.player_sprite = arcade.Sprite()
-        self.player_sprite.texture = arcade.load_texture("sprites/sprite_sheet.png", x = 0, y = 32*self.char_index, width = 32, height = 32)
-        self.player_sprite.scale = 3
+        self.player_sprite.texture = arcade.load_texture("sprites/sprite_sheet.png", x = 32*self.char_index, y = 0, width = 32, height = 32)
+        self.player_sprite.scale = 3.5
         self.player_sprite.center_x = pos_x
         self.player_sprite.center_y = pos_y
 
@@ -152,7 +152,7 @@ class Player():
         
     def draw(self):
         self.player_sprite.draw(pixelated=True)
-        arcade.draw_text(self.name, self.player_sprite.center_x, self.player_sprite.center_y+40, arcade.color.WHITE, 12, anchor_x="center", font_name="Kenney Mini Square")
+        arcade.draw_text(self.name, self.player_sprite.center_x, self.player_sprite.center_y+18*self.player_sprite.scale, arcade.color.WHITE, 12, anchor_x="center", font_name="Kenney Mini Square")
         
     
 class OtherPlayer():
@@ -161,8 +161,8 @@ class OtherPlayer():
         # player variables
         self.char_index = char_index
         self.player_sprite = arcade.Sprite()
-        self.player_sprite.texture = arcade.load_texture("sprites/sprite_sheet.png", x = 0, y = 32*self.char_index, width = 32, height = 32)
-        self.player_sprite.scale = 3
+        self.player_sprite.texture = arcade.load_texture("sprites/sprite_sheet.png", x = 32*self.char_index, y = 0, width = 32, height = 32)
+        self.player_sprite.scale = 3.5
         self.player_sprite.center_x = pos_x
         self.player_sprite.center_y = pos_y
 
@@ -171,4 +171,4 @@ class OtherPlayer():
     def draw(self):
         self.player_sprite.draw(pixelated=True)
 
-        arcade.draw_text(self.name, self.player_sprite.center_x, self.player_sprite.center_y+40, arcade.color.WHITE, 12, anchor_x="center", font_name="Kenney Mini Square")
+        arcade.draw_text(self.name, self.player_sprite.center_x, self.player_sprite.center_y+18*self.player_sprite.scale, arcade.color.WHITE, 12, anchor_x="center", font_name="Kenney Mini Square")

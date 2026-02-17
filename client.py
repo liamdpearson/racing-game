@@ -7,6 +7,7 @@ import arcade # type: ignore
 import arcade.gui # type: ignore
 import threading
 import socket
+import math
 
 from network import Network
 import server
@@ -46,8 +47,8 @@ class Game(arcade.View):
         self.listen_thread = threading.Thread(target=self.listen_for_updates, daemon = True)
         self.listen_thread.start()
 
-        #top speed, acceleration, break_speed, handling
-        self.car_stats = ((17, 0.1, 0.2, 2), (16, 0.15, 0.25, 2.25), (16.5, 0.125, 0.225, 2.125))
+        #top speed, acceleration, break_speed, handling. perfect stats: 20, 0.25, 0.3, 2.5
+        self.car_stats = ((20, 0.15, 0.2, 2), (18, 0.25, 0.25, 2.25), (19, 0.2, 0.225, 2.125))
         
         self.tile_map = None
         self.wall_list = None
@@ -71,8 +72,7 @@ class Game(arcade.View):
         # setup map and walls
         self.tile_map = arcade.load_tilemap("maps/map1.json", scaling=3, offset=(0,0))
         self.tire_list = self.tile_map.sprite_lists["Tires"]
-        self.head_list = self.tile_map.sprite_lists["Heads"]
-        self.shoulders_list = self.tile_map.sprite_lists["Shoulders"]
+        self.light_list = self.tile_map.sprite_lists["Lights"]
         self.wall_list = self.tile_map.sprite_lists["Walls"]
         self.floor_list = self.tile_map.sprite_lists["Floor"]
         self.finishline = self.tile_map.sprite_lists["FinishLine"]
@@ -93,6 +93,7 @@ class Game(arcade.View):
         # camera offset
         self.cam_offset_x = SCREEN_WIDTH/2
         self.cam_offset_y = SCREEN_HEIGHT/2
+
         
     
     
@@ -114,8 +115,7 @@ class Game(arcade.View):
         self.floor_list.draw(pixelated = True)
         #self.wall_list.draw(pixelated = True)
         self.tire_list.draw(pixelated = True)
-        self.head_list.draw(pixelated = True)
-        self.shoulders_list.draw(pixelated = True)
+        self.light_list.draw(pixelated = True)
         self.finishline.draw(pixelated = True)
         
         
@@ -542,13 +542,13 @@ class SwapData(arcade.View):
             sprite = arcade.Sprite(scale = 5)
             sprite.center_x = SCREEN_WIDTH/2 + (i-1)*200
             sprite.center_y = 5*SCREEN_HEIGHT/8
-            tex = arcade.load_texture("sprites/sprite_sheet.png", x = 0, y = 32*i, width = 32, height = 32)
+            tex = arcade.load_texture("sprites/sprite_sheet.png", x = 32*i, y = 0, width = 32, height = 68)
             sprite.texture = tex
 
             self.car_sprites.append(sprite)
         
-        self.circle_x = self.car_sprites[self.character_id].center_x
-        self.circle_y = 5*SCREEN_HEIGHT/8
+        self.rect_x = self.car_sprites[self.character_id].center_x
+        self.rect_y = 5*SCREEN_HEIGHT/8
 
         # init gui manager
         self.manager = arcade.gui.UIManager()
@@ -595,7 +595,7 @@ class SwapData(arcade.View):
             if self.car_sprites[i].collides_with_point((x,y)):
                 self.character_id = i
                 edit_file.swap_character_id(i)
-                self.circle_x = self.car_sprites[i].center_x
+                self.rect_x = self.car_sprites[i].center_x
                 
     def on_draw(self):
         arcade.start_render()
@@ -605,7 +605,7 @@ class SwapData(arcade.View):
                         7 * SCREEN_HEIGHT/8, arcade.color.WHITE, 20, 
                         anchor_x="center", font_name="Kenney Mini Square")
         
-        arcade.draw_rectangle_outline(self.circle_x, self.circle_y, 140,200, arcade.color.WHITE)
+        arcade.draw_rectangle_outline(self.rect_x, self.rect_y, 200,375, arcade.color.WHITE)
         
         for car in self.car_sprites:
             car.draw(pixelated=True)
