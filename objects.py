@@ -101,7 +101,10 @@ class Player():
                 self.player_sprite.angle += self.drift_offset
             
             elif self.left_key not in self.pressed_keys and self.right_key in self.pressed_keys:
-                self.player_sprite.angle -= self.drift_offset
+                self.player_sprite.angle -= self.drift_offset\
+        
+        if key == arcade.key.SPACE:
+            self.speed += 5
     
 
     def key_released(self, key, modifiers):
@@ -115,23 +118,22 @@ class Player():
             
             self.direction = self.player_sprite.angle
 
-    def update(self, delta_time):
+    def update(self, multiplier):
 
         self.marker.check_distance(self.player_sprite.center_x, self.player_sprite.center_y)
-        multiplier = delta_time * 60
 
         # movement calculations
         if self.forward_key in self.pressed_keys:
             self.speed += self.acceleration * multiplier
             if self.speed > self.top_speed:
-                self.speed = self.top_speed
+                self.speed -= self.acceleration*3
         
         if self.break_key in self.pressed_keys:
             self.speed -= self.break_speed * multiplier
-            if self.speed < 0:
-                self.speed = 0
+            if self.speed < -self.top_speed:
+                self.speed += self.acceleration*3
 
-        if self.speed > 0:
+        if self.speed > 0.1 or self.speed < -0.1:
             if self.right_key in self.pressed_keys:
                 self.direction -= self.handling * multiplier
                 self.player_sprite.angle -= self.handling * multiplier
@@ -153,7 +155,7 @@ class Player():
     def draw(self):
         self.player_sprite.draw(pixelated=True)
         arcade.draw_text(self.name, self.player_sprite.center_x, self.player_sprite.center_y+18*self.player_sprite.scale, arcade.color.WHITE, 12, anchor_x="center", font_name="Kenney Mini Square")
-        
+
     
 class OtherPlayer():
     def __init__(self, pos_x, pos_y, char_index, name):
