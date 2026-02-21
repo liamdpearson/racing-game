@@ -345,7 +345,7 @@ class MainMenu(arcade.View):
         arcade.start_render()
         self.manager.draw()
 
-        arcade.draw_text("Version Alpha 1.0", SCREEN_WIDTH/50, SCREEN_HEIGHT/25, arcade.color.WHITE, SCREEN_WIDTH/100, font_name="Kenney Mini Square")
+        arcade.draw_text("Version Alpha 1.1", SCREEN_WIDTH/50, SCREEN_HEIGHT/25, arcade.color.WHITE, SCREEN_WIDTH/100, font_name="Kenney Mini Square")
         arcade.draw_text("Racing Game", SCREEN_WIDTH/2, 3*SCREEN_HEIGHT/4, arcade.color.WHITE, SCREEN_WIDTH/20, anchor_x="center", font_name="Kenney Mini Square")
 
 
