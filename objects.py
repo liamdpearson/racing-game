@@ -86,7 +86,6 @@ class Player():
 
     def key_pressed(self, key, modifiers):
         if key not in self.pressed_keys:
-            self.pressed_keys.append(key)
 
         if key == self.drift_key:
             self.top_speed *= 0.8
@@ -99,7 +98,6 @@ class Player():
             
             elif self.left_key not in self.pressed_keys and self.right_key in self.pressed_keys:
                 self.player_sprite.angle -= self.drift_offset
-    
 
     def key_released(self, key, modifiers):
         if key in self.pressed_keys:
