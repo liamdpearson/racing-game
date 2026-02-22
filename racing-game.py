@@ -70,13 +70,13 @@ class Game(arcade.View):
         
         # setup map and walls
         self.tile_map = arcade.load_tilemap("maps/map1.json", scaling=3, offset=(0,0))
-        self.tire_list = self.tile_map.sprite_lists["Tires"]
+        self.tire_list = self.tile_map.sprite_lists["AllWalls"]
         self.light_list = self.tile_map.sprite_lists["Lights"]
         self.wall_list = self.tile_map.sprite_lists["Walls"]
         self.floor_list = self.tile_map.sprite_lists["Floor"]
         self.finishline = self.tile_map.sprite_lists["FinishLine"]
         self.speedboosts = self.tile_map.sprite_lists["SpeedBoosts"]
-        self.dirtpatches = self.tile_map.sprite_lists["DirtPatches"]
+        self.dirtpatches = self.tile_map.sprite_lists["SlowSpots"]
         
         # pos x, pos y, move speed, anim speed, char index, 
         self.player = objects.Player(self.start_pos[0], self.start_pos[1], self.car_stats[self.char_index], [arcade.key.LSHIFT], self.char_index, self.name)

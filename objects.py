@@ -88,9 +88,6 @@ class Player():
         if key not in self.pressed_keys:
             self.pressed_keys.append(key)
 
-        if key == arcade.key.SPACE:
-            print(str(int(self.player_sprite.center_x)) + " " + str(int(self.player_sprite.center_y)) + ",")
-
         if key == self.drift_key:
             self.top_speed *= 0.8
             self.speed *= 0.8
@@ -101,10 +98,7 @@ class Player():
                 self.player_sprite.angle += self.drift_offset
             
             elif self.left_key not in self.pressed_keys and self.right_key in self.pressed_keys:
-                self.player_sprite.angle -= self.drift_offset\
-        
-        if key == arcade.key.SPACE:
-            self.speed += 5
+                self.player_sprite.angle -= self.drift_offset
     
 
     def key_released(self, key, modifiers):
