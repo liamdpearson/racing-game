@@ -25,6 +25,8 @@ class Game(arcade.View):
     def __init__(self, all_init_data):
         super().__init__()
 
+        print(all_init_data)
+
         self.fps = 0
 
         self.start_pos = read_pos(self.window.n.getData())

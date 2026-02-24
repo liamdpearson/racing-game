@@ -42,6 +42,9 @@ class Marker():
             self.next_position(player_x, player_y)
         
         self.int_for_sorting = int((self.total_checkpoints + 1 - self.dist_to_next_checkpoint/self.dist_between_cur_and_nxt_checkpoint)*100)
+    
+    def draw(self):
+        arcade.draw_circle_outline(self.x, self.y, 400, arcade.color.YELLOW)
         
     
 
@@ -148,6 +151,8 @@ class Player():
     def draw(self):
         self.player_sprite.draw(pixelated=True)
         arcade.draw_text(self.name, self.player_sprite.center_x, self.player_sprite.center_y+18*self.player_sprite.scale, arcade.color.WHITE, 12, anchor_x="center", font_name="Kenney Mini Square")
+
+        self.marker.draw()
 
     
 class OtherPlayer():
