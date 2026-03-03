@@ -12,12 +12,7 @@ from network import Network
 import server
 import edit_file
 import objects
-
-
-
-SCREEN_WIDTH, SCREEN_HEIGHT = arcade.window_commands.get_display_size()
-
-#SCREEN_WIDTH, SCREEN_HEIGHT = 500, 500
+from constants import SCREEN_WIDTH, SCREEN_HEIGHT, SCALE_MULTIPLIER, DIST_FROM_CORNER
 
 
 class Game(arcade.View):
@@ -37,6 +32,8 @@ class Game(arcade.View):
         self.all_init_data = all_init_data.split()
         self.player_index = int(self.all_init_data[0])
         self.players = self.all_init_data[1:]
+        self.map_index = int(self.players[0][-1])
+        self.players[0] = self.players[0][:-1]
         self.player_data = self.players[self.player_index]
         self.other_players_data = self.players[:self.player_index] + self.players[self.player_index+1:]
 
@@ -63,6 +60,8 @@ class Game(arcade.View):
         self.locked = True
         self.current_place = 0
         self.laps_to_go_msg = "3 laps to go"
+
+        self.should_go_back_to_menu = False
         
         self.setup()
     
@@ -71,7 +70,7 @@ class Game(arcade.View):
     def setup(self):
         
         # setup map and walls
-        self.tile_map = arcade.load_tilemap("maps/map1.json", scaling=3, offset=(0,0))
+        self.tile_map = arcade.load_tilemap("maps/map" + str(self.map_index + 1) + ".json", scaling=3*SCALE_MULTIPLIER, offset=(0,0))
         self.tire_list = self.tile_map.sprite_lists["AllWalls"]
         self.light_list = self.tile_map.sprite_lists["Lights"]
         self.wall_list = self.tile_map.sprite_lists["Walls"]
@@ -81,10 +80,10 @@ class Game(arcade.View):
         self.dirtpatches = self.tile_map.sprite_lists["SlowSpots"]
         
         # pos x, pos y, move speed, anim speed, char index, 
-        self.player = objects.Player(self.start_pos[0], self.start_pos[1], self.car_stats[self.char_index], [arcade.key.LSHIFT], self.char_index, self.name)
-
+        self.player = objects.Player(self.start_pos[0], self.start_pos[1], self.car_stats[self.char_index], [arcade.key.LSHIFT], self.char_index, self.name, self.map_index)
         for player in self.other_players_data:
             self.other_players.append(objects.OtherPlayer(0, 0, int(player[-1]), player[:-1]))
+
         
         # setup cameras
         self.camera = arcade.Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -101,12 +100,9 @@ class Game(arcade.View):
     
     
     def listen_for_updates(self):
-        while self.window.done == False:
+        while not self.window.done and self.window.n:
             if not self.window.n.update():
-                self.window.n = None
-                self.window.mainmenu = MainMenu()
-                self.window.show_view(self.window.mainmenu)
-                self.window.done = True
+                self.should_go_back_to_menu = True
             
         print("listening stopped")
         return None
@@ -119,10 +115,10 @@ class Game(arcade.View):
         self.camera.use()
         
         self.floor_list.draw(pixelated = True)
+        self.finishline.draw(pixelated = True)
         self.dirtpatches.draw(pixelated = True)
         self.tire_list.draw(pixelated = True)
         self.light_list.draw(pixelated = True)
-        self.finishline.draw(pixelated = True)
         self.speedboosts.draw(pixelated = True)
         
         
@@ -152,8 +148,16 @@ class Game(arcade.View):
         
     def on_update(self, delta_time):
 
+        #check if should go back to menu
+        if self.should_go_back_to_menu:
+            self.window.n = None
+            self.window.mainmenu = MainMenu()
+            self.window.show_view(self.window.mainmenu)
+            return
+
         #update fps
-        self.fps = int(1/delta_time)
+        if delta_time > 0:
+            self.fps = int(1 / delta_time)
 
         multiplier = 60*delta_time
             
@@ -171,40 +175,41 @@ class Game(arcade.View):
         self.camera.move_to((cam_pos_x, cam_pos_y))
         
         if self.window.n:
-            self.window.n.p_data = make_pos((self.player.player_sprite.center_x,
-                                            self.player.player_sprite.center_y,
+            self.window.n.p_data = make_pos((self.player.player_sprite.center_x / SCALE_MULTIPLIER,
+                                            self.player.player_sprite.center_y / SCALE_MULTIPLIER,
                                             self.player.player_sprite.angle,
                                             self.player.marker.int_for_sorting
                                             ))
         
         
-        if self.window.n.all_data:
-            if self.window.n.all_data[-1] == "f":
-                finished_players = self.window.n.all_data.split()[-1][:-1]
+        data = self.window.n.all_data
+        if data:
+            if data[-1] == "f":
+                finished_players = data.split()[-1][:-1]
                 self.window.done = True
                 self.window.n = None
                 self.endscreen = EndScreen(finished_players, self.players)
                 self.window.show_view(self.endscreen)
             else:
-                self.current_place = int(self.window.n.all_data[-1])
-                self.all_positions = self.window.n.all_data[:-1].split()
+                self.current_place = int(data[-1])
+                self.all_positions = data[:-1].split()
                 del self.all_positions[self.player_index]
                 if self.all_positions:
                     for i in range(len(self.all_positions)):
                             data = read_pos(self.all_positions[i])
                             if len(data) == 3:
                                 player = self.other_players[i]
-                                player.player_sprite.center_x = data[0]
-                                player.player_sprite.center_y = data[1]
+                                player.player_sprite.center_x = data[0] * SCALE_MULTIPLIER
+                                player.player_sprite.center_y = data[1] * SCALE_MULTIPLIER
                                 player.player_sprite.angle = data[2]
 
         # finish line check
         if arcade.check_for_collision_with_list(self.player.player_sprite, self.finishline):
-            if self.player.marker.total_checkpoints == 28:
+            if self.player.marker.total_checkpoints == self.player.marker.checkpoints_per_lap * 1:
                 self.laps_to_go_msg = "2 laps to go"
-            elif self.player.marker.total_checkpoints == 56:
+            elif self.player.marker.total_checkpoints == self.player.marker.checkpoints_per_lap * 2:
                 self.laps_to_go_msg = "Final lap!"
-            elif self.player.marker.total_checkpoints == 84:
+            elif self.player.marker.total_checkpoints == self.player.marker.checkpoints_per_lap * 3:
                 self.player.marker.total_checkpoints += 1
         
         # speedboost check
@@ -305,15 +310,8 @@ class MainMenu(arcade.View):
         @host_button.event("on_click")
         def on_click_settings(event):
             self.manager.disable()
-            self.init_data = edit_file.get_name() + str(edit_file.get_character_id())
-            self.window.server_thread = threading.Thread(target=server.main, daemon = True)
-            self.window.server_thread.start()
-            self.window.n = Network(self.init_data)
-            self.window.n.set_server(self.window.server)
-            self.window.n.connect()
-            self.window.hosting = True
-            self.window.lobby = LobbyHost()
-            self.window.show_view(self.window.lobby)
+            self.window.choose_map = ChooseMap()
+            self.window.show_view(self.window.choose_map)
             
         @join_button.event("on_click")
         def on_click_settings(event):
@@ -350,6 +348,68 @@ class MainMenu(arcade.View):
         arcade.draw_text("Version Alpha 1.1", SCREEN_WIDTH/50, SCREEN_HEIGHT/25, arcade.color.WHITE, SCREEN_WIDTH/100, font_name="Kenney Mini Square")
         arcade.draw_text("Racing Game", SCREEN_WIDTH/2, 3*SCREEN_HEIGHT/4, arcade.color.WHITE, SCREEN_WIDTH/20, anchor_x="center", font_name="Kenney Mini Square")
 
+
+class ChooseMap(arcade.View):
+    """ get map from host """
+    def __init__(self):
+        super().__init__()
+
+        self.selected_map = 0
+
+        # init gui manager
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+        
+        # Create a vertical BoxGroup to align buttons
+        self.v_box = arcade.gui.UIBoxLayout()
+
+        # Create the buttons
+        open_button = arcade.gui.UIFlatButton(text="Open Lobby", width=200, style=self.window.button_style)
+        self.v_box.add(open_button.with_space_around(bottom=20))
+
+        back_button = arcade.gui.UIFlatButton(text="Back to Menu", width=200, style=self.window.button_style)
+        self.v_box.add(back_button.with_space_around(bottom=20))
+
+        @open_button.event("on_click")
+        def on_click_settings(event):
+            self.manager.disable()
+            self.init_data = edit_file.get_name() + str(edit_file.get_character_id()) 
+            self.window.server_thread = threading.Thread(target=server.main, args=(self.selected_map,), daemon=True)
+            self.window.server_thread.start()
+            self.window.n = Network(self.init_data + str(self.selected_map))
+            self.window.n.set_server(self.window.server)
+            self.window.n.connect()
+            self.window.hosting = True
+            self.window.lobby = LobbyHost()
+            self.window.show_view(self.window.lobby)
+        
+        @back_button.event("on_click")
+        def on_click_settings(event):
+            self.manager.disable()
+            self.window.mainmenu = MainMenu()
+            self.window.show_view(self.window.mainmenu)
+        
+        # Create a widget to hold the v_box widget, that will center the buttons
+        self.manager.add(
+            arcade.gui.UIAnchorWidget(
+                anchor_x="center_x",
+                anchor_y="center_y",
+                align_y = -SCREEN_HEIGHT/3,
+                child=self.v_box)
+            )
+        
+    def on_draw(self):
+        arcade.start_render()
+        self.manager.draw()
+
+        arcade.draw_text("Choose Map", SCREEN_WIDTH/2, 3*SCREEN_HEIGHT/4, arcade.color.WHITE, 40, anchor_x="center", font_name="Kenney Mini Square")
+        arcade.draw_text("Current Map: " + str(self.selected_map), SCREEN_WIDTH/2, SCREEN_HEIGHT/2, arcade.color.WHITE, 35, anchor_x="center", font_name="Kenney Mini Square")
+    
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.KEY_0:
+            self.selected_map = 0
+        if key == arcade.key.KEY_1:
+            self.selected_map = 1
 
 class LobbyHost(arcade.View):
     """ lobby menu for the host """
@@ -399,13 +459,27 @@ class LobbyHost(arcade.View):
     def on_draw(self):
         arcade.start_render()
 
+        def back_to_menu():
+            self.manager.disable()
+            self.window.n = None
+            self.window.mainmenu = MainMenu()
+            self.window.show_view(self.window.mainmenu)
+        
         if self.started == True:
             self.window.n.send("start")
             self.started = None
         if self.started == False:
             self.window.n.send(" ")
 
-        self.all_init_data = self.window.n.recv()
+        try:
+            self.all_init_data = self.window.n.recv()
+            if not self.all_init_data:
+                back_to_menu()
+                return
+        except:
+            back_to_menu()
+            return
+        
         lis = self.all_init_data.split("|")
         self.window.n.p_data = lis[0]
         self.all_init_data = lis[1]
@@ -413,7 +487,7 @@ class LobbyHost(arcade.View):
         if self.all_init_data[-5:] == "start":
             self.window.game = Game(self.all_init_data[:-5])
             self.window.show_view(self.window.game)
-        
+            
         self.manager.draw()
 
         data = self.all_init_data.split()
@@ -468,15 +542,22 @@ class LobbyGuest(arcade.View):
     def on_draw(self):
         arcade.start_render()
         self.manager.draw()
-        
+
+        def back_to_menu():
+            self.manager.disable()
+            self.window.n = None
+            self.window.mainmenu = MainMenu()
+            self.window.show_view(self.window.mainmenu)
+
         if self.started == False:
             self.window.n.send(" ")
             try:
                 self.all_init_data = self.window.n.recv()
+                if not self.all_init_data:
+                    back_to_menu()
+                    return
             except:
-                self.window.n = None
-                self.window.mainmenu = MainMenu()
-                self.window.show_view(self.window.mainmenu)
+                back_to_menu()
                 return
 
         lis = self.all_init_data.split("|")
@@ -503,7 +584,6 @@ class GetAddress(arcade.View):
         super().__init__()
 
         self.init_data = edit_file.get_name() + str(edit_file.get_character_id())
-        self.window.n = Network(self.init_data)
         
         self.viable_keys = (arcade.key.KEY_0, arcade.key.KEY_1,
                             arcade.key.KEY_2, arcade.key.KEY_3,
@@ -513,7 +593,11 @@ class GetAddress(arcade.View):
                             arcade.key.PERIOD)
         
         self.server = ""
+        self.invalid = 0
 
+        self.messages = ["Invalid IP Try Again", "Really twice? Are you even trying?",
+                         "Dawg do you even know what an IP is?", "This is getting sad now",
+                         "Just stop", "Never touch a keyboard again", "smh"]
 
         # init gui manager
         self.manager = arcade.gui.UIManager()
@@ -548,20 +632,24 @@ class GetAddress(arcade.View):
         elif key == arcade.key.BACKSPACE:
             self.server = self.server[:-1]
         elif key == arcade.key.ENTER:
+            self.window.n = Network(self.init_data)
             self.window.n.set_server(self.server)
             a = self.window.n.connect()
             if a:               
                 self.window.lobby = LobbyGuest()
                 self.window.show_view(self.window.lobby)
             else:
-                self.server = "invalid ip"
+                self.server = ""
+                if self.invalid < len(self.messages):
+                    self.invalid += 1
     
     def on_draw(self):
         arcade.start_render()
         self.manager.draw()
         
-        arcade.draw_text("Host IPv4: " + self.server, SCREEN_WIDTH/2, SCREEN_HEIGHT/2, arcade.color.WHITE, 20, anchor_x="center", font_name="Kenney Mini Square")
-
+        arcade.draw_text("Host IPv4: " + self.server, SCREEN_WIDTH/2, SCREEN_WIDTH/2, arcade.color.WHITE, 20, anchor_x="center", font_name="Kenney Mini Square")
+        if self.invalid > 0:
+            arcade.draw_text(self.messages[self.invalid - 1], SCREEN_WIDTH/2, 3*SCREEN_HEIGHT/5, arcade.color.YELLOW, 20, anchor_x="center", font_name="Kenney Mini Square")
 
 class SwapData(arcade.View):
     """ swap player data like name and character id """
@@ -650,7 +738,7 @@ class GameWindow(arcade.Window):
     """ Main Window """
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT)
-        self.set_location(0,0)
+        self.set_location(DIST_FROM_CORNER,DIST_FROM_CORNER)
         self.set_fullscreen(False)
 
         arcade.set_background_color(arcade.color.BLACK)
@@ -689,7 +777,7 @@ def read_pos(stra):
     stra = stra.split(",")
     f_tup = []
     for i in stra:
-        f_tup.append(int(float(i)))
+        f_tup.append(int(i))
     tup = tuple(f_tup)
     
     return tup

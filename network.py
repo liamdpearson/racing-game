@@ -30,6 +30,8 @@ class Network:
             self.p_data = self.client.recv(2048).decode()
             return True
         
+        except socket.timeout:
+            return False
         except Exception as e:
             print("Could not connect:", e)
             return False
@@ -46,4 +48,7 @@ class Network:
         self.client.send(str.encode(data))
     
     def recv(self):
-        return self.client.recv(2048).decode()
+        try:
+            return self.client.recv(2048).decode()
+        except socket.error:
+            return None

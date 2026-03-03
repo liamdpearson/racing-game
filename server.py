@@ -52,7 +52,11 @@ def convert_pos(lis):
     
     
     
-def main():
+def main(map_index):
+
+
+    start_coords = { 0: (300,2580), 1: (3150,1900)}
+
     server = get_local_ipv4()
     port = 5555
     
@@ -176,7 +180,8 @@ def main():
                 conn, addr = s.accept()
                 print("Connected to ", addr)
 
-                pos.append((300+75*connected_players,2580,0))
+                data = start_coords[map_index]
+                pos.append((data[0]+75*connected_players, data[1], 0))
                 checkpoint_data.append(0)
 
                 player_ref = [connected_players]
@@ -191,10 +196,3 @@ def main():
         if (started and connected_players == 0) or host_left:
             print("Closed server")
             break
-        
-
-        
-        
-        
-if __name__ == "__main__":
-    main()

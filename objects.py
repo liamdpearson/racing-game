@@ -2,8 +2,10 @@ import edit_file
 import arcade
 import math
 
+from constants import SCREEN_WIDTH, SCREEN_HEIGHT, SCALE_MULTIPLIER
+
 class Marker():
-    def __init__(self, player_x, player_y):
+    def __init__(self, player_x, player_y, map_index):
         self.total_checkpoints = 0
         self.checkpoint_index = 0
 
@@ -12,12 +14,13 @@ class Marker():
         self.dist_to_next_checkpoint = 1000
 
         # get the positions from the file and split them into a list
-        self.positions = edit_file.get_positions().split(",")
+        self.positions = edit_file.get_positions(map_index + 1).split(",")
+        self.checkpoints_per_lap = len(self.positions)
         for i in range(len(self.positions)):
             self.positions[i] = self.positions[i].split()
         
-        self.x = int(self.positions[self.checkpoint_index][0])
-        self.y = int(self.positions[self.checkpoint_index][1])
+        self.x = int(self.positions[self.checkpoint_index][0]) * SCALE_MULTIPLIER
+        self.y = int(self.positions[self.checkpoint_index][1]) * SCALE_MULTIPLIER
 
         self.dist_between_cur_and_nxt_checkpoint = math.sqrt((self.x - player_x)**2 + (self.y - player_y)**2)
 
@@ -31,34 +34,34 @@ class Marker():
 
         if self.checkpoint_index >= len(self.positions):
             self.checkpoint_index = 0
-        self.x = int(self.positions[self.checkpoint_index][0])
-        self.y = int(self.positions[self.checkpoint_index][1])
+        self.x = int(self.positions[self.checkpoint_index][0]) * SCALE_MULTIPLIER
+        self.y = int(self.positions[self.checkpoint_index][1]) * SCALE_MULTIPLIER
 
         self.dist_between_cur_and_nxt_checkpoint = math.sqrt((self.x - player_x)**2 + (self.y - player_y)**2)
     
     def check_distance(self, player_x, player_y):
         self.dist_to_next_checkpoint = math.sqrt((self.x - player_x)**2 + (self.y - player_y)**2)
-        if self.dist_to_next_checkpoint < 400:
+        if self.dist_to_next_checkpoint < 400 * SCALE_MULTIPLIER:
             self.next_position(player_x, player_y)
         
         self.int_for_sorting = int((self.total_checkpoints + 1 - self.dist_to_next_checkpoint/self.dist_between_cur_and_nxt_checkpoint)*100)
     
     def draw(self):
-        arcade.draw_circle_outline(self.x, self.y, 400, arcade.color.YELLOW)
+        arcade.draw_circle_outline(self.x, self.y, 400 * SCALE_MULTIPLIER, arcade.color.YELLOW)
         
     
 
 class Player():
-    def __init__(self, pos_x, pos_y, car_stats, keybinds, char_index, name):
+    def __init__(self, pos_x, pos_y, car_stats, keybinds, char_index, name, map_index):
         super().__init__()
         
         # player variables
         self.char_index = char_index
         self.player_sprite = arcade.Sprite()
         self.player_sprite.texture = arcade.load_texture("sprites/sprite_sheet.png", x = 32*self.char_index, y = 0, width = 32, height = 32)
-        self.player_sprite.scale = 3.5
-        self.player_sprite.center_x = pos_x
-        self.player_sprite.center_y = pos_y
+        self.player_sprite.scale = 3.5 * SCALE_MULTIPLIER
+        self.player_sprite.center_x = pos_x * SCALE_MULTIPLIER
+        self.player_sprite.center_y = pos_y * SCALE_MULTIPLIER
 
         self.top_speed = car_stats[0]
         self.acceleration = car_stats[1]
@@ -71,7 +74,7 @@ class Player():
 
         self.name = name
 
-        self.marker = Marker(self.player_sprite.center_x, self.player_sprite.center_y)
+        self.marker = Marker(self.player_sprite.center_x, self.player_sprite.center_y, map_index)
 
         self.pressed_keys = []
         
@@ -90,6 +93,9 @@ class Player():
     def key_pressed(self, key, modifiers):
         if key not in self.pressed_keys:
             self.pressed_keys.append(key)
+        
+        if key == arcade.key.SPACE:
+            print(int(self.player_sprite.center_x), " ", int(self.player_sprite.center_y), ",")
             
         if key == self.drift_key:
             self.top_speed *= 0.8
@@ -139,11 +145,13 @@ class Player():
                 self.player_sprite.angle += self.handling * multiplier
         
 
-        self.player_sprite.change_y = math.cos(math.radians(-self.direction)) * self.speed * multiplier
-        self.player_sprite.change_x = math.sin(math.radians(-self.direction)) * self.speed * multiplier
+        self.player_sprite.change_y = math.cos(math.radians(-self.direction)) * self.speed * multiplier * SCALE_MULTIPLIER
+        self.player_sprite.change_x = math.sin(math.radians(-self.direction)) * self.speed * multiplier * SCALE_MULTIPLIER
 
         if self.speed > 0:
             self.speed -= 0.05 * multiplier
+        if self.speed < 0:
+            self.speed += 0.05 * multiplier
             
         
         
@@ -162,9 +170,9 @@ class OtherPlayer():
         self.char_index = char_index
         self.player_sprite = arcade.Sprite()
         self.player_sprite.texture = arcade.load_texture("sprites/sprite_sheet.png", x = 32*self.char_index, y = 0, width = 32, height = 32)
-        self.player_sprite.scale = 3.5
-        self.player_sprite.center_x = pos_x
-        self.player_sprite.center_y = pos_y
+        self.player_sprite.scale = 3.5 * SCALE_MULTIPLIER
+        self.player_sprite.center_x = pos_x * SCALE_MULTIPLIER
+        self.player_sprite.center_y = pos_y * SCALE_MULTIPLIER
 
         self.name = name
         

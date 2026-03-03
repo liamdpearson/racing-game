@@ -5,7 +5,7 @@
  "margin":0,
  "name":"tileset",
  "spacing":0,
- "tilecount":16,
+ "tilecount":32,
  "tiledversion":"1.11.2",
  "tileheight":32,
  "tilewidth":32,

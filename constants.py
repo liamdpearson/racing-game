@@ -1,0 +1,10 @@
+
+import arcade
+
+
+SCREEN_WIDTH, SCREEN_HEIGHT = arcade.window_commands.get_display_size()
+#SCREEN_WIDTH, SCREEN_HEIGHT = 1000, 1000
+
+SCALE_MULTIPLIER = SCREEN_WIDTH/2560
+
+DIST_FROM_CORNER = 00

@@ -35,8 +35,8 @@ def get_character_id():
 
 
 
-def get_positions():
-    with open("maps/map1data.txt", "r") as file:
+def get_positions(i):
+    with open("maps/map" + str(i) + "data.txt", "r") as file:
         line = file.readline()
     
     return line
