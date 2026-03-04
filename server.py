@@ -55,7 +55,7 @@ def convert_pos(lis):
 def main(map_index):
 
 
-    start_coords = { 0: (300,2580), 1: (3150,1900)}
+    start_coords = { 0: (300,2580,8500), 1: (3150,1900,4000)}
 
     server = get_local_ipv4()
     port = 5555
@@ -107,7 +107,7 @@ def main(map_index):
             checkpoint_data[player] = data[-1] # int for sorting
             nonlocal finished_players, all_finished
 
-            if checkpoint_data[player] >= 8500:
+            if checkpoint_data[player] >= start_coords[map_index][2]:
                 if str(player) not in finished_players:
                     finished_players += str(player)
 
