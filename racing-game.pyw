@@ -210,6 +210,7 @@ class Game(arcade.View):
             elif self.player.marker.total_checkpoints == self.player.marker.checkpoints_per_lap * 2:
                 self.laps_to_go_msg = "Final lap!"
             elif self.player.marker.total_checkpoints == self.player.marker.checkpoints_per_lap * 3:
+                self.laps_to_go_msg = "Finished!"
                 self.player.marker.total_checkpoints += 1
         
         # speedboost check
@@ -217,7 +218,7 @@ class Game(arcade.View):
             self.player.speed += 1.5 * multiplier
         
         if arcade.check_for_collision_with_list(self.player.player_sprite, self.dirtpatches):
-            self.player.speed *= 0.95**multiplier
+            self.player.speed *= 0.96**multiplier
         
 
 
@@ -496,7 +497,9 @@ class LobbyHost(arcade.View):
 
         arcade.draw_text("You are player " + str(player_index+1), SCREEN_WIDTH/2, 6.5 * SCREEN_HEIGHT/8, arcade.color.WHITE, 20, anchor_x="center", font_name="Kenney Mini Square")
 
-        for i in range(len(p_list)):
+        arcade.draw_text("Player 1: " + p_list[0][:-2], SCREEN_WIDTH/2, 6 * SCREEN_HEIGHT/8, arcade.color.WHITE, 20, anchor_x="center", font_name="Kenney Mini Square")
+
+        for i in range(1, len(p_list)):
             arcade.draw_text("Player " + str(i+1) + ": " + p_list[i][:-1], SCREEN_WIDTH/2, 6 * SCREEN_HEIGHT/8-i*30, arcade.color.WHITE, 20, anchor_x="center", font_name="Kenney Mini Square")
 
         arcade.draw_text("Your IPv4: " + self.window.n.server, SCREEN_WIDTH/2, 7 * SCREEN_HEIGHT/8, arcade.color.WHITE, 20, anchor_x="center", font_name="Kenney Mini Square")
@@ -573,8 +576,10 @@ class LobbyGuest(arcade.View):
         p_list = data[1:]
         player_index = int(data[0])
 
+        arcade.draw_text("Player 1: " + p_list[0][:-2], SCREEN_WIDTH/2, 6 * SCREEN_HEIGHT/8, arcade.color.WHITE, 20, anchor_x="center", font_name="Kenney Mini Square")
+
         arcade.draw_text("You are player " + str(player_index+1), SCREEN_WIDTH/2, 6.5 * SCREEN_HEIGHT/8, arcade.color.WHITE, 20, anchor_x="center", font_name="Kenney Mini Square")
-        for i in range(len(p_list)):
+        for i in range(1, len(p_list)):
             arcade.draw_text("Player " + str(i+1) + ": " + p_list[i][:-1], SCREEN_WIDTH/2, 6 * SCREEN_HEIGHT/8-i*30, arcade.color.WHITE, 20, anchor_x="center", font_name="Kenney Mini Square")
 
 
