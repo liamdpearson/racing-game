@@ -138,9 +138,9 @@ class Game(arcade.View):
 
         #draw fps
         arcade.draw_text(str(self.fps) + " fps", 15, SCREEN_HEIGHT-35, arcade.color.WHITE, 20, font_name="Kenney Mini Square")
-        arcade.draw_text(str(self.current_place), SCREEN_HEIGHT/10 + 5, SCREEN_HEIGHT/10 - 5, arcade.color.EERIE_BLACK, SCREEN_HEIGHT/10, font_name="Kenney Blocks")
-        arcade.draw_text(str(self.current_place), SCREEN_HEIGHT/10, SCREEN_HEIGHT/10, self.window.place_colors[self.current_place], SCREEN_HEIGHT/10, font_name="Kenney Blocks")
-        arcade.draw_text(self.laps_to_go_msg, SCREEN_WIDTH/2, 24*SCREEN_HEIGHT/25, arcade.color.WHITE, SCREEN_HEIGHT/30, anchor_x="center", font_name="Kenney Mini Square")
+        arcade.draw_text(str(self.current_place), SCREEN_HEIGHT/10 + 5, SCREEN_HEIGHT/10 - 5, arcade.color.EERIE_BLACK, 150 * SCALE_MULTIPLIER, font_name="Kenney Blocks")
+        arcade.draw_text(str(self.current_place), SCREEN_HEIGHT/10, SCREEN_HEIGHT/10, self.window.place_colors[self.current_place], 150 * SCALE_MULTIPLIER, font_name="Kenney Blocks")
+        arcade.draw_text(self.laps_to_go_msg, SCREEN_WIDTH/2, 24*SCREEN_HEIGHT/25, arcade.color.WHITE, 50 * SCALE_MULTIPLIER, anchor_x="center", font_name="Kenney Mini Square")
         #arcade.draw_text(str(self.player.marker.int_for_sorting), SCREEN_WIDTH/2, 9*SCREEN_HEIGHT/10, arcade.color.YELLOW, SCREEN_HEIGHT/20, anchor_x="center", font_name="Kenney Mini Square")
 
         
