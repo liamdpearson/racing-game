@@ -165,7 +165,7 @@ def main(map_index):
                     ref[0] -= 1
 
             for i in range(len(pos)):
-                pos[i] = (300+75*i,2580,0)
+                pos[i] = (start_coords[map_index][0]+75*i, start_coords[map_index][1], 0)
             
         
         print("Player " + str(player_ref[0]+1) + " disconnected")

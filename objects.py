@@ -128,7 +128,7 @@ class Player():
         if self.forward_key in self.pressed_keys:
             self.speed += self.acceleration * multiplier
             if self.speed > self.top_speed:
-                self.speed -= self.acceleration*3
+                self.speed -= .6
         
         if self.break_key in self.pressed_keys:
             self.speed -= self.break_speed * multiplier

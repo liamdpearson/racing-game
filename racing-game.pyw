@@ -23,7 +23,6 @@ class Game(arcade.View):
         print(all_init_data)
 
         self.fps = 0
-
         self.start_pos = read_pos(self.window.n.getData())
         
         self.player = None
@@ -188,8 +187,8 @@ class Game(arcade.View):
                 finished_players = data.split()[-1][:-1]
                 self.window.done = True
                 self.window.n = None
-                self.endscreen = EndScreen(finished_players, self.players)
-                self.window.show_view(self.endscreen)
+                self.window.endscreen = EndScreen(finished_players, self.players)
+                self.window.show_view(self.window.endscreen)
             else:
                 self.current_place = int(data[-1])
                 self.all_positions = data[:-1].split()
@@ -260,6 +259,7 @@ class EndScreen(arcade.View):
             self.window.done = False
             self.window.mainmenu = MainMenu()
             self.window.show_view(self.window.mainmenu)
+            self.window.endscreen = None
             
         
         # Create a widget to hold the v_box widget, that will center the buttons
@@ -313,24 +313,27 @@ class MainMenu(arcade.View):
             self.manager.disable()
             self.window.choose_map = ChooseMap()
             self.window.show_view(self.window.choose_map)
+            self.window.mainmenu = None
             
         @join_button.event("on_click")
         def on_click_settings(event):
             self.manager.disable()
             self.window.getaddress = GetAddress()
             self.window.show_view(self.window.getaddress)
+            self.window.mainmenu = None
 
         @swap_button.event("on_click")
         def on_click_settings(event):
             self.manager.disable()
             self.window.swapdata = SwapData()
             self.window.show_view(self.window.swapdata)
+            self.window.mainmenu = None
 
         @quit_button.event("on_click")
         def on_click_settings(event):
             self.manager.disable()
             self.window.done = True
-            self.window.close()  
+            self.window.close()
         
         # Create a widget to hold the v_box widget, that will center the buttons
         self.manager.add(
@@ -383,12 +386,14 @@ class ChooseMap(arcade.View):
             self.window.hosting = True
             self.window.lobby = LobbyHost()
             self.window.show_view(self.window.lobby)
+            self.window.choose_map = None
         
         @back_button.event("on_click")
         def on_click_settings(event):
             self.manager.disable()
             self.window.mainmenu = MainMenu()
             self.window.show_view(self.window.mainmenu)
+            self.window.choose_map = None
         
         # Create a widget to hold the v_box widget, that will center the buttons
         self.manager.add(
@@ -441,6 +446,7 @@ class LobbyHost(arcade.View):
             self.window.n = None
             self.window.mainmenu = MainMenu()
             self.window.show_view(self.window.mainmenu)
+            self.window.lobby = None
         
         @start_button.event("on_click")
         def on_click_settings(event):
@@ -465,6 +471,7 @@ class LobbyHost(arcade.View):
             self.window.n = None
             self.window.mainmenu = MainMenu()
             self.window.show_view(self.window.mainmenu)
+            self.window.lobby = None
         
         if self.started == True:
             self.window.n.send("start")
@@ -527,10 +534,7 @@ class LobbyGuest(arcade.View):
 
         @back_button.event("on_click")
         def on_click_settings(event):
-            self.manager.disable()
-            self.window.n = None
-            self.window.mainmenu = MainMenu()
-            self.window.show_view(self.window.mainmenu)
+            self.leave()
 
         # Create a widget to hold the v_box widget, that will center the buttons
         self.manager.add(
@@ -540,27 +544,28 @@ class LobbyGuest(arcade.View):
                 align_y = -SCREEN_HEIGHT/3,
                 child=self.v_box)
             )
+    
+    def leave(self):
+        self.manager.disable()
+        self.window.n = None
+        self.window.mainmenu = MainMenu()
+        self.window.show_view(self.window.mainmenu)
+        self.window.lobby = None
             
             
     def on_draw(self):
         arcade.start_render()
         self.manager.draw()
 
-        def back_to_menu():
-            self.manager.disable()
-            self.window.n = None
-            self.window.mainmenu = MainMenu()
-            self.window.show_view(self.window.mainmenu)
-
         if self.started == False:
             self.window.n.send(" ")
             try:
                 self.all_init_data = self.window.n.recv()
                 if not self.all_init_data:
-                    back_to_menu()
+                    self.leave()
                     return
             except:
-                back_to_menu()
+                self.leave()
                 return
 
         lis = self.all_init_data.split("|")
@@ -597,12 +602,8 @@ class GetAddress(arcade.View):
                             arcade.key.KEY_8, arcade.key.KEY_9,
                             arcade.key.PERIOD)
         
-        self.server = ""
+        self.server = "192.168.0.249"
         self.invalid = 0
-
-        self.messages = ["Invalid IP Try Again", "Really twice? Are you even trying?",
-                         "Dawg do you even know what an IP is?", "This is getting sad now",
-                         "Just stop", "Never touch a keyboard again", "smh"]
 
         # init gui manager
         self.manager = arcade.gui.UIManager()
@@ -645,16 +646,15 @@ class GetAddress(arcade.View):
                 self.window.show_view(self.window.lobby)
             else:
                 self.server = ""
-                if self.invalid < len(self.messages):
-                    self.invalid += 1
+                self.invalid += 1
     
     def on_draw(self):
         arcade.start_render()
         self.manager.draw()
         
-        arcade.draw_text("Host IPv4: " + self.server, SCREEN_WIDTH/2, SCREEN_WIDTH/2, arcade.color.WHITE, 20, anchor_x="center", font_name="Kenney Mini Square")
+        arcade.draw_text("Host IPv4: " + self.server, SCREEN_WIDTH/2, SCREEN_HEIGHT/2, arcade.color.WHITE, 20, anchor_x="center", font_name="Kenney Mini Square")
         if self.invalid > 0:
-            arcade.draw_text(self.messages[self.invalid - 1], SCREEN_WIDTH/2, 3*SCREEN_HEIGHT/5, arcade.color.YELLOW, 20, anchor_x="center", font_name="Kenney Mini Square")
+            arcade.draw_text("Invalid IP Try Again", SCREEN_WIDTH/2, 3*SCREEN_HEIGHT/5, arcade.color.YELLOW, 20, anchor_x="center", font_name="Kenney Mini Square")
 
 class SwapData(arcade.View):
     """ swap player data like name and character id """

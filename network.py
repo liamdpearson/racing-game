@@ -51,4 +51,5 @@ class Network:
         try:
             return self.client.recv(2048).decode()
         except socket.error:
+            print("Could not receive data")
             return None
