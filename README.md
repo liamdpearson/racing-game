@@ -1,6 +1,7 @@
-This is a multiplayer racing game that I am making for fun.
-Feel free to critic my code as I know it is far from perfect.
+# Multiplayer Racing Game
+![Python](https://img.shields.io/badge/python-3.11.9-blue)
+![Python](https://img.shields.io/badge/arcade-2.6.17-red)
 
-I am using arcade version 2.6.17 and python 3.11.9.
+Real-time local multiplayer racing game using threading and sockets.
 
-Run "pip install arcade==2.6.17" to install the right version.
+Written in Python using the Arcade library.
