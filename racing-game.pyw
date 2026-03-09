@@ -1,6 +1,5 @@
 # Liam Pearson
-# Oct 7 2025
-# Multiplayer Game Client
+# Multiplayer Racing Game Client
 
 
 import arcade # type: ignore
@@ -12,7 +11,7 @@ from network import Network
 import server
 import edit_file
 import objects
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT, SCALE_MULTIPLIER, DIST_FROM_CORNER
+from constants import MAP_SCALE_MULTIPLIER, SCREEN_WIDTH, SCREEN_HEIGHT, SCALE_MULTIPLIER, DIST_FROM_CORNER
 
 
 class Game(arcade.View):
@@ -55,7 +54,7 @@ class Game(arcade.View):
         
         self.physics_engine = None
 
-        self.start_counter = 10
+        self.start_counter = 3
         self.locked = True
         self.current_place = 0
         self.laps_to_go_msg = "3 laps to go"
@@ -69,7 +68,7 @@ class Game(arcade.View):
     def setup(self):
         
         # setup map and walls
-        self.tile_map = arcade.load_tilemap("maps/map" + str(self.map_index + 1) + ".json", scaling=3*SCALE_MULTIPLIER, offset=(0,0))
+        self.tile_map = arcade.load_tilemap("maps/map" + str(self.map_index + 1) + ".json", scaling=3*MAP_SCALE_MULTIPLIER, offset=(0,0))
         self.tire_list = self.tile_map.sprite_lists["AllWalls"]
         self.light_list = self.tile_map.sprite_lists["Lights"]
         self.wall_list = self.tile_map.sprite_lists["Walls"]
@@ -174,8 +173,8 @@ class Game(arcade.View):
         self.camera.move_to((cam_pos_x, cam_pos_y))
         
         if self.window.n:
-            self.window.n.p_data = make_pos((self.player.player_sprite.center_x / SCALE_MULTIPLIER,
-                                            self.player.player_sprite.center_y / SCALE_MULTIPLIER,
+            self.window.n.p_data = make_pos((self.player.player_sprite.center_x / MAP_SCALE_MULTIPLIER,
+                                            self.player.player_sprite.center_y / MAP_SCALE_MULTIPLIER,
                                             self.player.player_sprite.angle,
                                             self.player.marker.int_for_sorting
                                             ))
@@ -198,13 +197,13 @@ class Game(arcade.View):
                             data = read_pos(self.all_positions[i])
                             if len(data) == 3:
                                 player = self.other_players[i]
-                                player.player_sprite.center_x = data[0] * SCALE_MULTIPLIER
-                                player.player_sprite.center_y = data[1] * SCALE_MULTIPLIER
+                                player.player_sprite.center_x = data[0] * MAP_SCALE_MULTIPLIER
+                                player.player_sprite.center_y = data[1] * MAP_SCALE_MULTIPLIER
                                 player.player_sprite.angle = data[2]
 
         # finish line check
         if arcade.check_for_collision_with_list(self.player.player_sprite, self.finishline):
-            if self.player.marker.total_checkpoints == self.player.marker.checkpoints_per_lap * 1:
+            if self.player.marker.total_checkpoints == self.player.marker.checkpoints_per_lap:
                 self.laps_to_go_msg = "2 laps to go"
             elif self.player.marker.total_checkpoints == self.player.marker.checkpoints_per_lap * 2:
                 self.laps_to_go_msg = "Final lap!"
@@ -214,7 +213,7 @@ class Game(arcade.View):
         
         # speedboost check
         if arcade.check_for_collision_with_list(self.player.player_sprite, self.speedboosts):
-            self.player.speed += 1.5 * multiplier
+            self.player.speed += 1.15 * multiplier
         
         if arcade.check_for_collision_with_list(self.player.player_sprite, self.dirtpatches):
             self.player.speed *= 0.96**multiplier
@@ -349,7 +348,7 @@ class MainMenu(arcade.View):
         arcade.start_render()
         self.manager.draw()
 
-        arcade.draw_text("Version Alpha 1.1", SCREEN_WIDTH/50, SCREEN_HEIGHT/25, arcade.color.WHITE, SCREEN_WIDTH/100, font_name="Kenney Mini Square")
+        arcade.draw_text("Version Alpha 1.2", SCREEN_WIDTH/50, SCREEN_HEIGHT/25, arcade.color.WHITE, 30 * SCALE_MULTIPLIER, font_name="Kenney Mini Square")
         arcade.draw_text("Racing Game", SCREEN_WIDTH/2, 3*SCREEN_HEIGHT/4, arcade.color.WHITE, SCREEN_WIDTH/20, anchor_x="center", font_name="Kenney Mini Square")
 
 
