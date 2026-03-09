@@ -666,7 +666,7 @@ class SwapData(arcade.View):
 
         self.car_sprites = []
         for i in range(3):
-            sprite = arcade.Sprite(scale = 5)
+            sprite = arcade.Sprite(scale = 5*SCALE_MULTIPLIER)
             sprite.center_x = SCREEN_WIDTH/2 + (i-1)*200
             sprite.center_y = 5*SCREEN_HEIGHT/8
             tex = arcade.load_texture("sprites/sprite_sheet.png", x = 32*i, y = 0, width = 32, height = 71)
@@ -732,7 +732,8 @@ class SwapData(arcade.View):
                         7 * SCREEN_HEIGHT/8, arcade.color.WHITE, 20, 
                         anchor_x="center", font_name="Kenney Mini Square")
         
-        arcade.draw_rectangle_outline(self.rect_x, self.rect_y, 200,375, arcade.color.WHITE)
+        arcade.draw_rectangle_outline(self.rect_x, self.rect_y,
+                                      200*SCALE_MULTIPLIER,375*SCALE_MULTIPLIER, arcade.color.WHITE)
         
         for car in self.car_sprites:
             car.draw(pixelated=True)
