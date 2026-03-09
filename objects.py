@@ -174,7 +174,7 @@ class Player():
         self.player_sprite.draw(pixelated=True)
         arcade.draw_text(self.name, self.player_sprite.center_x, self.player_sprite.center_y+18*self.player_sprite.scale, arcade.color.WHITE, 12, anchor_x="center", font_name="Kenney Mini Square")
         if self.drifting:
-            x, y = (self.player_sprite.center_x + 75)*SCALE_MULTIPLIER, (self.player_sprite.center_y + 130)*SCALE_MULTIPLIER
+            x, y = (self.player_sprite.center_x + 75), (self.player_sprite.center_y + 130)
             arcade.draw_circle_filled(x, y, 32, arcade.color.BLACK)
             arcade.draw_circle_filled(x, y, 30*self.drift_boost, (255, 255*(1-self.drift_boost), 0))
             arcade.draw_circle_outline(x, y, 35, arcade.color.EERIE_BLACK, 5)
