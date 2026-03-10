@@ -7,11 +7,11 @@ import arcade.gui # type: ignore
 import threading
 import socket
 
-from network import Network
-import server
-import edit_file
-import objects
-from constants import MAP_SCALE_MULTIPLIER, SCREEN_WIDTH, SCREEN_HEIGHT, SCALE_MULTIPLIER, DIST_FROM_CORNER
+from data.scripts.network import Network
+import data.scripts.server as server
+import data.scripts.edit_file as edit_file
+import data.scripts.objects as objects
+from data.scripts.constants import MAP_SCALE_MULTIPLIER, SCREEN_WIDTH, SCREEN_HEIGHT, SCALE_MULTIPLIER, DIST_FROM_CORNER, SPEED_BOOST_SOUND
 
 
 class Game(arcade.View):
@@ -59,6 +59,7 @@ class Game(arcade.View):
         self.current_place = 0
         self.laps_to_go_msg = "3 laps to go"
 
+        self.col_w_speedboost = False
         self.should_go_back_to_menu = False
         
         self.setup()
@@ -68,7 +69,7 @@ class Game(arcade.View):
     def setup(self):
         
         # setup map and walls
-        self.tile_map = arcade.load_tilemap("maps/map" + str(self.map_index + 1) + ".json", scaling=3*MAP_SCALE_MULTIPLIER, offset=(0,0))
+        self.tile_map = arcade.load_tilemap("data/maps/map" + str(self.map_index + 1) + ".json", scaling=3*MAP_SCALE_MULTIPLIER, offset=(0,0))
         self.tire_list = self.tile_map.sprite_lists["AllWalls"]
         self.light_list = self.tile_map.sprite_lists["Lights"]
         self.wall_list = self.tile_map.sprite_lists["Walls"]
@@ -200,7 +201,6 @@ class Game(arcade.View):
                                 player.player_sprite.center_x = data[0] * MAP_SCALE_MULTIPLIER
                                 player.player_sprite.center_y = data[1] * MAP_SCALE_MULTIPLIER
                                 player.player_sprite.angle = data[2]
-
         # finish line check
         if arcade.check_for_collision_with_list(self.player.player_sprite, self.finishline):
             if self.player.marker.total_checkpoints == self.player.marker.checkpoints_per_lap:
@@ -214,6 +214,11 @@ class Game(arcade.View):
         # speedboost check
         if arcade.check_for_collision_with_list(self.player.player_sprite, self.speedboosts):
             self.player.speed += 1.15 * multiplier
+            if not self.col_w_speedboost:
+                self.col_w_speedboost = True
+                SPEED_BOOST_SOUND.force_play_sound(0.1)
+        else:
+            self.col_w_speedboost = False
         
         if arcade.check_for_collision_with_list(self.player.player_sprite, self.dirtpatches):
             self.player.speed *= 0.96**multiplier
@@ -669,7 +674,7 @@ class SwapData(arcade.View):
             sprite = arcade.Sprite(scale = 5*SCALE_MULTIPLIER)
             sprite.center_x = SCREEN_WIDTH/2 + (i-1)*200
             sprite.center_y = 5*SCREEN_HEIGHT/8
-            tex = arcade.load_texture("sprites/sprite_sheet.png", x = 32*i, y = 0, width = 32, height = 71)
+            tex = arcade.load_texture("data/sprites/sprite_sheet.png", x = 32*i, y = 0, width = 32, height = 71)
             sprite.texture = tex
 
             self.car_sprites.append(sprite)

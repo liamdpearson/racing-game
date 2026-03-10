@@ -1,8 +1,8 @@
-import edit_file
+import data.scripts.edit_file as edit_file
 import arcade
 import math
 
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT, SCALE_MULTIPLIER, MAP_SCALE_MULTIPLIER
+from data.scripts.constants import SCALE_MULTIPLIER, MAP_SCALE_MULTIPLIER, DRIFT_BOOST_SOUND
 
 class Marker():
     def __init__(self, player_x, player_y, map_index):
@@ -58,10 +58,16 @@ class Player():
         # player variables
         self.char_index = char_index
         self.player_sprite = arcade.Sprite()
-        self.player_sprite.texture = arcade.load_texture("sprites/sprite_sheet.png", x = 32*self.char_index, y = 0, width = 32, height = 32)
+        self.player_sprite.texture = arcade.load_texture("data/sprites/sprite_sheet.png", x = 32*self.char_index, y = 0, width = 32, height = 32)
         self.player_sprite.scale = 3.5 * SCALE_MULTIPLIER
         self.player_sprite.center_x = pos_x * MAP_SCALE_MULTIPLIER
         self.player_sprite.center_y = pos_y * MAP_SCALE_MULTIPLIER
+
+        self.boost_sprite = arcade.Sprite()
+        self.boost_sprite.texture = arcade.load_texture("data/sprites/sprite_sheet.png", x = 96 + 32*self.char_index, y = 0, width = 32, height = 40)
+        self.boost_sprite.scale = self.player_sprite.scale
+        self.boost_sprite.center_x = self.player_sprite.center_x
+        self.boost_sprite.center_y = self.player_sprite.center_y
 
         self.top_speed = car_stats[0]
         self.acceleration = car_stats[1]
@@ -74,6 +80,7 @@ class Player():
 
         self.drifting = False
         self.drift_boost = 0
+        self.boost_timer = 0
 
         self.name = name
 
@@ -97,10 +104,10 @@ class Player():
         if key not in self.pressed_keys:
             self.pressed_keys.append(key)
         
-        if key == arcade.key.SPACE:
-            print(int(self.player_sprite.center_x), " ", int(self.player_sprite.center_y), ",")
+        #if key == arcade.key.SPACE:
+        #    print(int(self.player_sprite.center_x), " ", int(self.player_sprite.center_y), ",")
             
-        if key == self.drift_key:
+        if key == self.drift_key and (self.right_key in self.pressed_keys or self.left_key in self.pressed_keys):
             self.drifting = True
             self.top_speed *= 0.8
             self.speed *= 0.8
@@ -117,13 +124,15 @@ class Player():
         if key in self.pressed_keys:
             self.pressed_keys.remove(key)
         
-        if key == self.drift_key:
+        if key == self.drift_key and self.drifting:
             self.drifting = False
             self.speed += self.drift_boost*10
+            self.boost_timer = self.drift_boost/2
             self.drift_boost = 0
             self.top_speed /= 0.8
             self.acceleration /= 0.8
             self.handling *= 0.8
+            DRIFT_BOOST_SOUND.play_sound(0.2)
             
             self.direction = self.player_sprite.angle
 
@@ -166,11 +175,20 @@ class Player():
         if self.drifting:
             if self.drift_boost < 1:
                 self.drift_boost += 0.025 * multiplier
-            
+        
+        # set boost to player
+        self.boost_sprite.center_x = self.player_sprite.center_x
+        self.boost_sprite.center_y = self.player_sprite.center_y
+        self.boost_sprite.angle = self.player_sprite.angle
+
+        if self.boost_timer > 0:
+            self.boost_timer -= 0.01 * multiplier
         
         
         
     def draw(self):
+        if self.boost_timer > 0:
+            self.boost_sprite.draw(pixelated=True)
         self.player_sprite.draw(pixelated=True)
         arcade.draw_text(self.name, self.player_sprite.center_x, self.player_sprite.center_y+18*self.player_sprite.scale, arcade.color.WHITE, 12, anchor_x="center", font_name="Kenney Mini Square")
         if self.drifting:
@@ -187,7 +205,7 @@ class OtherPlayer():
         # player variables
         self.char_index = char_index
         self.player_sprite = arcade.Sprite()
-        self.player_sprite.texture = arcade.load_texture("sprites/sprite_sheet.png", x = 32*self.char_index, y = 0, width = 32, height = 32)
+        self.player_sprite.texture = arcade.load_texture("data/sprites/sprite_sheet.png", x = 32*self.char_index, y = 0, width = 32, height = 32)
         self.player_sprite.scale = 3.5 * SCALE_MULTIPLIER
         self.player_sprite.center_x = pos_x * SCALE_MULTIPLIER
         self.player_sprite.center_y = pos_y * SCALE_MULTIPLIER
