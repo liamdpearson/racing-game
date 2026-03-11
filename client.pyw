@@ -81,7 +81,7 @@ class Game(arcade.View):
         # pos x, pos y, move speed, anim speed, char index, 
         self.player = objects.Player(self.start_pos[0], self.start_pos[1], self.car_stats[self.char_index], [arcade.key.LSHIFT], self.char_index, self.name, self.map_index)
         for player in self.other_players_data:
-            self.other_players.append(objects.OtherPlayer(0, 0, int(player[-1]), player[:-1]))
+            self.other_players.append(objects.OtherPlayer(int(player[-1]), player[:-1]))
 
         
         # setup cameras
@@ -168,6 +168,9 @@ class Game(arcade.View):
         else:
             self.player.update(multiplier)
         
+        for p in self.other_players:
+            p.update()
+        
         cam_pos_x = self.player.player_sprite.center_x - self.cam_offset_x
         cam_pos_y = self.player.player_sprite.center_y - self.cam_offset_y
         
@@ -177,6 +180,7 @@ class Game(arcade.View):
             self.window.n.p_data = make_pos((self.player.player_sprite.center_x / MAP_SCALE_MULTIPLIER,
                                             self.player.player_sprite.center_y / MAP_SCALE_MULTIPLIER,
                                             self.player.player_sprite.angle,
+                                            self.player.draw_boost,
                                             self.player.marker.int_for_sorting
                                             ))
         
@@ -195,12 +199,13 @@ class Game(arcade.View):
                 del self.all_positions[self.player_index]
                 if self.all_positions:
                     for i in range(len(self.all_positions)):
-                            data = read_pos(self.all_positions[i])
-                            if len(data) == 3:
+                            p_data = read_pos(self.all_positions[i])
+                            if len(p_data) == 4:
                                 player = self.other_players[i]
-                                player.player_sprite.center_x = data[0] * MAP_SCALE_MULTIPLIER
-                                player.player_sprite.center_y = data[1] * MAP_SCALE_MULTIPLIER
-                                player.player_sprite.angle = data[2]
+                                player.player_sprite.center_x = p_data[0] * MAP_SCALE_MULTIPLIER
+                                player.player_sprite.center_y = p_data[1] * MAP_SCALE_MULTIPLIER
+                                player.player_sprite.angle = p_data[2]
+                                player.draw_boost = p_data[3]
         # finish line check
         if arcade.check_for_collision_with_list(self.player.player_sprite, self.finishline):
             if self.player.marker.total_checkpoints == self.player.marker.checkpoints_per_lap:

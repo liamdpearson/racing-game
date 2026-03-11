@@ -78,9 +78,12 @@ class Player():
         self.direction = 0
         self.drift_offset = 30
 
+        self.turing_left = False
+
         self.drifting = False
         self.drift_boost = 0
         self.boost_timer = 0
+        self.draw_boost = 0
 
         self.name = name
 
@@ -119,6 +122,15 @@ class Player():
                     
             elif self.left_key not in self.pressed_keys and self.right_key in self.pressed_keys:
                 self.player_sprite.angle -= self.drift_offset
+                self.turing_left = False
+        
+        if self.drifting:
+            if self.turing_left == True and key == self.right_key:
+                self.player_sprite.angle -= 2*self.drift_offset
+                self.turning_left = False
+            if self.turing_left == False and key == self.left_key:
+                self.player_sprite.angle += 2*self.drift_offset
+                self.turning_left = True
 
     def key_released(self, key, modifiers):
         if key in self.pressed_keys:
@@ -155,10 +167,12 @@ class Player():
             if self.right_key in self.pressed_keys:
                 self.direction -= self.handling * multiplier
                 self.player_sprite.angle -= self.handling * multiplier
+                self.turing_left = False
             
             if self.left_key in self.pressed_keys:
                 self.direction += self.handling * multiplier
                 self.player_sprite.angle += self.handling * multiplier
+                self.turing_left = True
         
 
         self.player_sprite.change_y = math.cos(math.radians(-self.direction)) * self.speed * multiplier * SCALE_MULTIPLIER
@@ -183,6 +197,10 @@ class Player():
 
         if self.boost_timer > 0:
             self.boost_timer -= 0.01 * multiplier
+            self.draw_boost = 1
+        else:
+            self.boost_timer = 0
+            self.draw_boost = 0
         
         
         
@@ -195,24 +213,39 @@ class Player():
             x, y = (self.player_sprite.center_x + 75*SCALE_MULTIPLIER), (self.player_sprite.center_y + 130*SCALE_MULTIPLIER)
             arcade.draw_circle_filled(x, y, 32*SCALE_MULTIPLIER, arcade.color.BLACK)
             arcade.draw_circle_filled(x, y, 30*self.drift_boost*SCALE_MULTIPLIER, (255, 255*(1-self.drift_boost), 0))
-            arcade.draw_circle_outline(x, y, 35*SCALE_MULTIPLIER, arcade.color.EERIE_BLACK, 5)
+            arcade.draw_circle_outline(x, y, 35*SCALE_MULTIPLIER, arcade.color.EERIE_BLACK, 5*SCALE_MULTIPLIER)
         self.marker.draw()
 
     
 class OtherPlayer():
-    def __init__(self, pos_x, pos_y, char_index, name):
+    def __init__(self, char_index, name):
         
         # player variables
         self.char_index = char_index
         self.player_sprite = arcade.Sprite()
         self.player_sprite.texture = arcade.load_texture("data/sprites/sprite_sheet.png", x = 32*self.char_index, y = 0, width = 32, height = 32)
         self.player_sprite.scale = 3.5 * SCALE_MULTIPLIER
-        self.player_sprite.center_x = pos_x * SCALE_MULTIPLIER
-        self.player_sprite.center_y = pos_y * SCALE_MULTIPLIER
+        self.player_sprite.center_x = 0
+        self.player_sprite.center_y = 0
+
+        self.boost_sprite = arcade.Sprite()
+        self.boost_sprite.texture = arcade.load_texture("data/sprites/sprite_sheet.png", x = 96 + 32*self.char_index, y = 0, width = 32, height = 40)
+        self.boost_sprite.scale = self.player_sprite.scale
+        self.boost_sprite.center_x = 0
+        self.boost_sprite.center_y = 0
 
         self.name = name
-        
-    def draw(self):
-        self.player_sprite.draw(pixelated=True)
 
+        self.draw_boost = 0
+    
+    def update(self):
+         # set boost to player
+        self.boost_sprite.center_x = self.player_sprite.center_x
+        self.boost_sprite.center_y = self.player_sprite.center_y
+        self.boost_sprite.angle = self.player_sprite.angle
+
+    def draw(self):
+        if self.draw_boost == 1:
+            self.boost_sprite.draw(pixelated=True)
+        self.player_sprite.draw(pixelated=True)
         arcade.draw_text(self.name, self.player_sprite.center_x, self.player_sprite.center_y+18*self.player_sprite.scale, arcade.color.WHITE, 12, anchor_x="center", font_name="Kenney Mini Square")
