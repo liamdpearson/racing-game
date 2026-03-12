@@ -81,7 +81,9 @@ class Game(arcade.View):
         # pos x, pos y, move speed, anim speed, char index, 
         self.player = objects.Player(self.start_pos[0], self.start_pos[1], self.car_stats[self.char_index], [arcade.key.LSHIFT], self.char_index, self.name, self.map_index)
         for player in self.other_players_data:
-            self.other_players.append(objects.OtherPlayer(int(player[-1]), player[:-1]))
+            op = objects.OtherPlayer(int(player[-1]), player[:-1])
+            self.other_players.append(op)
+            self.wall_list.append(op.player_sprite)
 
         
         # setup cameras
