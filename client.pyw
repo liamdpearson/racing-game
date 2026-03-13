@@ -427,6 +427,8 @@ class ChooseMap(arcade.View):
             self.selected_map = 0
         if key == arcade.key.KEY_1:
             self.selected_map = 1
+        if key == arcade.key.KEY_2:
+            self.selected_map = 2
 
 class LobbyHost(arcade.View):
     """ lobby menu for the host """
