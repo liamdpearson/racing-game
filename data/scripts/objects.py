@@ -216,6 +216,8 @@ class Player():
             arcade.draw_circle_outline(x, y, 35*SCALE_MULTIPLIER, arcade.color.EERIE_BLACK, 5*SCALE_MULTIPLIER)
         self.marker.draw()
 
+        #arcade.draw_circle_outline(self.player_sprite.center_x, self.player_sprite.center_y, 400 * MAP_SCALE_MULTIPLIER, arcade.color.YELLOW)
+
     
 class OtherPlayer():
     def __init__(self, char_index, name):

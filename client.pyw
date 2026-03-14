@@ -54,7 +54,7 @@ class Game(arcade.View):
         
         self.physics_engine = None
 
-        self.start_counter = 3
+        self.start_counter = 8
         self.locked = True
         self.current_place = 0
         self.laps_to_go_msg = "3 laps to go"
@@ -71,12 +71,13 @@ class Game(arcade.View):
         # setup map and walls
         self.tile_map = arcade.load_tilemap("data/maps/map" + str(self.map_index + 1) + ".json", scaling=3*MAP_SCALE_MULTIPLIER, offset=(0,0))
         self.tire_list = self.tile_map.sprite_lists["AllWalls"]
-        self.light_list = self.tile_map.sprite_lists["Lights"]
+        self.decor_list = self.tile_map.sprite_lists["Decor"]
         self.wall_list = self.tile_map.sprite_lists["Walls"]
         self.floor_list = self.tile_map.sprite_lists["Floor"]
         self.finishline = self.tile_map.sprite_lists["FinishLine"]
         self.speedboosts = self.tile_map.sprite_lists["SpeedBoosts"]
         self.dirtpatches = self.tile_map.sprite_lists["SlowSpots"]
+        self.background = self.tile_map.sprite_lists["Background"]
         
         # pos x, pos y, move speed, anim speed, char index, 
         self.player = objects.Player(self.start_pos[0], self.start_pos[1], self.car_stats[self.char_index], [arcade.key.LSHIFT], self.char_index, self.name, self.map_index)
@@ -115,11 +116,12 @@ class Game(arcade.View):
         
         self.camera.use()
         
+        self.background.draw(pixelated = True)
         self.floor_list.draw(pixelated = True)
         self.finishline.draw(pixelated = True)
         self.dirtpatches.draw(pixelated = True)
         self.tire_list.draw(pixelated = True)
-        self.light_list.draw(pixelated = True)
+        self.decor_list.draw(pixelated = True)
         self.speedboosts.draw(pixelated = True)
         
         
