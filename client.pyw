@@ -41,10 +41,9 @@ class Game(arcade.View):
         self.all_positions = None
         
         self.listen_thread = threading.Thread(target=self.listen_for_updates, daemon = True)
-        self.listen_thread.start()
 
-        #top speed, acceleration, break_speed, handling. perfect stats: 20, 0.25, 0.3, 2.5
-        self.car_stats = ((20, 0.15, 0.2, 2), (18, 0.25, 0.25, 2.25), (19, 0.2, 0.225, 2.125))
+        #top speed, acceleration, break_speed, handling. perfect stats: 25, 0.25, 0.3, 2.5
+        self.car_stats = ((25, 0.18, 0.2, 2), (22.5, 0.3, 0.25, 2.25), (23.75, 0.24, 0.225, 2.125))
         
         self.tile_map = None
         self.wall_list = None
@@ -85,6 +84,9 @@ class Game(arcade.View):
             op = objects.OtherPlayer(int(player[-1]), player[:-1])
             self.other_players.append(op)
             self.wall_list.append(op.player_sprite)
+            print("op created")
+        
+        self.listen_thread.start()
 
         
         # setup cameras
@@ -106,8 +108,35 @@ class Game(arcade.View):
             if not self.window.n.update():
                 self.should_go_back_to_menu = True
             
+            self.update_other_players()
+            
         print("listening stopped")
         return None
+
+
+
+    def update_other_players(self):
+        data = self.window.n.all_data
+        if data:
+            if data[-1] == "f":
+                finished_players = data.split()[-1][:-1]
+                self.window.done = True
+                self.window.n = None
+                self.window.endscreen = EndScreen(finished_players, self.players)
+                self.window.show_view(self.window.endscreen)
+            else:
+                self.current_place = int(data[-1])
+                self.all_positions = data[:-1].split()
+                del self.all_positions[self.player_index]
+                if self.all_positions:
+                    for i in range(len(self.all_positions)):
+                            p_data = read_pos(self.all_positions[i])
+                            if len(p_data) == 4:
+                                player = self.other_players[i]
+                                player.player_sprite.center_x = p_data[0] * MAP_SCALE_MULTIPLIER
+                                player.player_sprite.center_y = p_data[1] * MAP_SCALE_MULTIPLIER
+                                player.player_sprite.angle = p_data[2]
+                                player.draw_boost = p_data[3]
         
     
         
@@ -124,13 +153,10 @@ class Game(arcade.View):
         self.decor_list.draw(pixelated = True)
         self.speedboosts.draw(pixelated = True)
         
-        
-        
         if self.other_players:
             for player in self.other_players:
                 player.draw()
         self.player.draw()
-        
         
         # draw gui 
         self.gui_camera.use()
@@ -138,7 +164,6 @@ class Game(arcade.View):
             arcade.draw_text(int(self.start_counter), SCREEN_WIDTH/2, 
                              SCREEN_HEIGHT/2, arcade.color.YELLOW,
                              80, anchor_x="center", font_name="Kenney Mini Square")
-        
 
         #draw fps
         arcade.draw_text(str(self.fps) + " fps", 15, SCREEN_HEIGHT-35, arcade.color.WHITE, 20, font_name="Kenney Mini Square")
@@ -187,29 +212,7 @@ class Game(arcade.View):
                                             self.player.draw_boost,
                                             self.player.marker.int_for_sorting
                                             ))
-        
-        
-        data = self.window.n.all_data
-        if data:
-            if data[-1] == "f":
-                finished_players = data.split()[-1][:-1]
-                self.window.done = True
-                self.window.n = None
-                self.window.endscreen = EndScreen(finished_players, self.players)
-                self.window.show_view(self.window.endscreen)
-            else:
-                self.current_place = int(data[-1])
-                self.all_positions = data[:-1].split()
-                del self.all_positions[self.player_index]
-                if self.all_positions:
-                    for i in range(len(self.all_positions)):
-                            p_data = read_pos(self.all_positions[i])
-                            if len(p_data) == 4:
-                                player = self.other_players[i]
-                                player.player_sprite.center_x = p_data[0] * MAP_SCALE_MULTIPLIER
-                                player.player_sprite.center_y = p_data[1] * MAP_SCALE_MULTIPLIER
-                                player.player_sprite.angle = p_data[2]
-                                player.draw_boost = p_data[3]
+            
         # finish line check
         if arcade.check_for_collision_with_list(self.player.player_sprite, self.finishline):
             if self.player.marker.total_checkpoints == self.player.marker.checkpoints_per_lap:
