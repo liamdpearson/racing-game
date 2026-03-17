@@ -181,7 +181,7 @@ def main(map_index):
                 print("Connected to ", addr)
 
                 data = start_coords[map_index]
-                pos.append((data[0]+75*connected_players, data[1], 0, 0))
+                pos.append((data[0]+75*connected_players, data[1], 0, 0, 0))
                 checkpoint_data.append(0)
 
                 player_ref = [connected_players]

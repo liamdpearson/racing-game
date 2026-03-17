@@ -55,7 +55,7 @@ class Game(arcade.View):
 
         self.start_counter = 8
         self.locked = True
-        self.current_place = 0
+        self.current_place = 1
         self.laps_to_go_msg = "3 laps to go"
 
         self.col_w_speedboost = False
@@ -107,7 +107,7 @@ class Game(arcade.View):
         while not self.window.done and self.window.n:
             if not self.window.n.update():
                 self.should_go_back_to_menu = True
-            
+
             self.update_other_players()
             
         print("listening stopped")
@@ -131,12 +131,14 @@ class Game(arcade.View):
                 if self.all_positions:
                     for i in range(len(self.all_positions)):
                             p_data = read_pos(self.all_positions[i])
-                            if len(p_data) == 4:
-                                player = self.other_players[i]
-                                player.player_sprite.center_x = p_data[0] * MAP_SCALE_MULTIPLIER
-                                player.player_sprite.center_y = p_data[1] * MAP_SCALE_MULTIPLIER
-                                player.player_sprite.angle = p_data[2]
-                                player.draw_boost = p_data[3]
+                            if len(p_data) == 5:
+                                self.other_players[i].accept_data(
+                                    p_data[0] * MAP_SCALE_MULTIPLIER, # x
+                                    p_data[1] * MAP_SCALE_MULTIPLIER, # y
+                                    p_data[2], # angle
+                                    p_data[3], # speed
+                                    p_data[4]  # boosting
+                                )
         
     
         
@@ -198,7 +200,7 @@ class Game(arcade.View):
             self.player.update(multiplier)
         
         for p in self.other_players:
-            p.update()
+            p.update(multiplier)
         
         cam_pos_x = self.player.player_sprite.center_x - self.cam_offset_x
         cam_pos_y = self.player.player_sprite.center_y - self.cam_offset_y
@@ -209,6 +211,7 @@ class Game(arcade.View):
             self.window.n.p_data = make_pos((self.player.player_sprite.center_x / MAP_SCALE_MULTIPLIER,
                                             self.player.player_sprite.center_y / MAP_SCALE_MULTIPLIER,
                                             self.player.player_sprite.angle,
+                                            self.player.speed,
                                             self.player.draw_boost,
                                             self.player.marker.int_for_sorting
                                             ))

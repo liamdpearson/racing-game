@@ -237,11 +237,24 @@ class OtherPlayer():
         self.boost_sprite.center_y = 0
 
         self.name = name
-
         self.draw_boost = 0
-    
-    def update(self):
-         # set boost to player
+        self.speed = 0
+
+    def accept_data(self, x, y, angle, speed, boosting):
+        self.player_sprite.center_x = x
+        self.player_sprite.center_y = y
+        self.player_sprite.angle = angle
+        self.speed = speed
+        print("speed is", speed)
+        self.draw_boost = boosting
+
+    def update(self, multiplier):
+
+        self.player_sprite.change_y = math.cos(math.radians(-self.player_sprite.angle)) * self.speed * multiplier * SCALE_MULTIPLIER
+        self.player_sprite.change_x = math.sin(math.radians(-self.player_sprite.angle)) * self.speed * multiplier * SCALE_MULTIPLIER
+        self.player_sprite.center_y += self.player_sprite.change_y
+        self.player_sprite.center_x += self.player_sprite.change_x
+        # set boost to player
         self.boost_sprite.center_x = self.player_sprite.center_x
         self.boost_sprite.center_y = self.player_sprite.center_y
         self.boost_sprite.angle = self.player_sprite.angle
