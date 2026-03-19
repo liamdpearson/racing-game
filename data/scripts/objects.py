@@ -245,7 +245,6 @@ class OtherPlayer():
         self.player_sprite.center_y = y
         self.player_sprite.angle = angle
         self.speed = speed
-        print("speed is", speed)
         self.draw_boost = boosting
 
     def update(self, multiplier):
