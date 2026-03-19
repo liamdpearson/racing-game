@@ -56,7 +56,7 @@ class Game(arcade.View):
         self.start_counter = 8
         self.locked = True
         self.current_place = 1
-        self.laps_to_go_msg = "3 laps to go"
+        self.laps_left = 3
 
         self.col_w_speedboost = False
         self.should_go_back_to_menu = False
@@ -168,10 +168,11 @@ class Game(arcade.View):
                              80, anchor_x="center", font_name="Kenney Mini Square")
 
         #draw fps
-        arcade.draw_text(str(self.fps) + " fps", 15, SCREEN_HEIGHT-35, arcade.color.WHITE, 20, font_name="Kenney Mini Square")
+        arcade.draw_text(str(self.fps) + " fps", 15, 44*SCREEN_HEIGHT/45, arcade.color.WHITE, 20*SCALE_MULTIPLIER, font_name="Kenney Mini Square")
         arcade.draw_text(str(self.current_place), SCREEN_HEIGHT/10 + 5, SCREEN_HEIGHT/10 - 5, arcade.color.EERIE_BLACK, 150 * SCALE_MULTIPLIER, font_name="Kenney Blocks")
         arcade.draw_text(str(self.current_place), SCREEN_HEIGHT/10, SCREEN_HEIGHT/10, self.window.place_colors[self.current_place], 150 * SCALE_MULTIPLIER, font_name="Kenney Blocks")
-        arcade.draw_text(self.laps_to_go_msg, SCREEN_WIDTH/2, 24*SCREEN_HEIGHT/25, arcade.color.WHITE, 50 * SCALE_MULTIPLIER, anchor_x="center", font_name="Kenney Mini Square")
+        if self.laps_left > 0:
+            arcade.draw_text("Lap " + str(4 - self.laps_left) + "/3", SCREEN_WIDTH/2, 24*SCREEN_HEIGHT/25, arcade.color.WHITE, 50 * SCALE_MULTIPLIER, anchor_x="center", font_name="Kenney Mini Square")
         #arcade.draw_text(str(self.player.marker.int_for_sorting), SCREEN_WIDTH/2, 9*SCREEN_HEIGHT/10, arcade.color.YELLOW, SCREEN_HEIGHT/20, anchor_x="center", font_name="Kenney Mini Square")
 
         
@@ -219,11 +220,11 @@ class Game(arcade.View):
         # finish line check
         if arcade.check_for_collision_with_list(self.player.player_sprite, self.finishline):
             if self.player.marker.total_checkpoints == self.player.marker.checkpoints_per_lap:
-                self.laps_to_go_msg = "2 laps to go"
+                self.laps_left = 2
             elif self.player.marker.total_checkpoints == self.player.marker.checkpoints_per_lap * 2:
-                self.laps_to_go_msg = "Final lap!"
+                self.laps_left = 1
             elif self.player.marker.total_checkpoints == self.player.marker.checkpoints_per_lap * 3:
-                self.laps_to_go_msg = "Finished!"
+                self.laps_left = 0
                 self.player.marker.total_checkpoints += 1
         
         # speedboost check
@@ -379,6 +380,17 @@ class ChooseMap(arcade.View):
 
         self.selected_map = 0
 
+        self.logo_sprites = []
+        for i in range(3):
+            s = arcade.Sprite()
+            s.texture = arcade.load_texture("data/sprites/map_logos.png", x = 0, y = 32*i, width = 128, height = 32)
+            s.scale = 6*SCALE_MULTIPLIER
+            s.center_x = SCREEN_WIDTH/2
+            s.center_y = SCREEN_HEIGHT/2 + 192*SCALE_MULTIPLIER * (1-i)
+            self.logo_sprites.append(s)
+
+        self.rect_y = SCREEN_HEIGHT/2 + 192*SCALE_MULTIPLIER
+
         # init gui manager
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
@@ -427,16 +439,17 @@ class ChooseMap(arcade.View):
         arcade.start_render()
         self.manager.draw()
 
-        arcade.draw_text("Choose Map", SCREEN_WIDTH/2, 3*SCREEN_HEIGHT/4, arcade.color.WHITE, 40, anchor_x="center", font_name="Kenney Mini Square")
-        arcade.draw_text("Current Map: " + str(self.selected_map), SCREEN_WIDTH/2, SCREEN_HEIGHT/2, arcade.color.WHITE, 35, anchor_x="center", font_name="Kenney Mini Square")
+        arcade.draw_text("Choose Map:", SCREEN_WIDTH/2, 7*SCREEN_HEIGHT/8, arcade.color.WHITE, 60*SCALE_MULTIPLIER, anchor_x="center", font_name="Kenney Mini Square")
+        for i in self.logo_sprites:
+            i.draw(pixelated=True)
+        arcade.draw_rectangle_outline(SCREEN_WIDTH/2, self.rect_y, 
+                                      128*6*SCALE_MULTIPLIER, 32*6*SCALE_MULTIPLIER, arcade.color.WHITE, border_width=5*SCALE_MULTIPLIER)
     
-    def on_key_press(self, key, modifiers):
-        if key == arcade.key.KEY_0:
-            self.selected_map = 0
-        if key == arcade.key.KEY_1:
-            self.selected_map = 1
-        if key == arcade.key.KEY_2:
-            self.selected_map = 2
+    def on_mouse_press(self, x, y, button, modifiers):
+        for i in range(3):
+            if self.logo_sprites[i].collides_with_point((x,y)):
+                self.selected_map = i
+                self.rect_y = self.logo_sprites[i].center_y
 
 class LobbyHost(arcade.View):
     """ lobby menu for the host """
@@ -623,7 +636,7 @@ class GetAddress(arcade.View):
                             arcade.key.KEY_8, arcade.key.KEY_9,
                             arcade.key.PERIOD)
         
-        self.server = "192.168.0.249"
+        self.server = ""
         self.invalid = 0
 
         # init gui manager

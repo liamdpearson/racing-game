@@ -55,7 +55,7 @@ def convert_pos(lis):
 def main(map_index):
 
 
-    start_coords = { 0: (300,2580,8500), 1: (3150,1900,4000), 2: (500,5075,5200)}
+    start_coords = { 0: (300,2580,8500), 1: (3150,1900,4300), 2: (500,5075,5200)}
 
     server = get_local_ipv4()
     port = 5555

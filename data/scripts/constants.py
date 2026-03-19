@@ -12,6 +12,4 @@ MAP_SCALE_MULTIPLIER = 1.25 * SCALE_MULTIPLIER
 DIST_FROM_CORNER = 100
 
 DRIFT_BOOST_SOUND = SoundManager("drift_boost.wav")
-DRIFT_BOOST_SOUND.play_sound(0)
 SPEED_BOOST_SOUND = SoundManager("speed_boost.wav")
-SPEED_BOOST_SOUND.play_sound(0)

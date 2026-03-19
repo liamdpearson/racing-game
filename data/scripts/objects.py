@@ -47,7 +47,7 @@ class Marker():
         self.int_for_sorting = int((self.total_checkpoints + 1 - self.dist_to_next_checkpoint/self.dist_between_cur_and_nxt_checkpoint)*100)
     
     #def draw(self):
-        #arcade.draw_circle_outline(self.x, self.y, 400 * MAP_SCALE_MULTIPLIER, arcade.color.YELLOW)
+    #    arcade.draw_circle_outline(self.x, self.y, 400 * MAP_SCALE_MULTIPLIER, arcade.color.YELLOW)
         
     
 
