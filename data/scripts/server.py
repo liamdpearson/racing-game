@@ -103,8 +103,6 @@ def main(map_index):
 
         def game_loop(data):
             player = player_ref[0]
-            if player == 0:
-                print("host running")
             pos[player] = data[:-1] # excludes int for sorting
             checkpoint_data[player] = data[-1] # int for sorting
             nonlocal finished_players, all_finished

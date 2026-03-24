@@ -61,6 +61,8 @@ class Game(arcade.View):
         self.col_w_speedboost = False
         self.should_go_back_to_menu = False
         self.show_menu = False
+
+        self.coin_counter = 0
         
         self.setup()
         self.init_menu()
@@ -71,13 +73,18 @@ class Game(arcade.View):
         
         # setup map and walls
         self.tile_map = arcade.load_tilemap("data/maps/map" + str(self.map_index + 1) + ".json", scaling=3*MAP_SCALE_MULTIPLIER, offset=(0,0))
+
+        self.coins = []
+        self.coin_list = self.tile_map.sprite_lists["Coins"]
+        for sprite in self.coin_list:
+            self.coins.append([sprite,0])
         self.tire_list = self.tile_map.sprite_lists["AllWalls"]
         self.decor_list = self.tile_map.sprite_lists["Decor"]
         self.wall_list = self.tile_map.sprite_lists["Walls"]
         self.floor_list = self.tile_map.sprite_lists["Floor"]
         self.finishline = self.tile_map.sprite_lists["FinishLine"]
         self.speedboosts = self.tile_map.sprite_lists["SpeedBoosts"]
-        self.dirtpatches = self.tile_map.sprite_lists["SlowSpots"]
+        self.slowspots = self.tile_map.sprite_lists["SlowSpots"]
         self.background = self.tile_map.sprite_lists["Background"]
         
         # pos x, pos y, move speed, anim speed, char index, 
@@ -167,10 +174,14 @@ class Game(arcade.View):
         self.background.draw(pixelated = True)
         self.floor_list.draw(pixelated = True)
         self.finishline.draw(pixelated = True)
-        self.dirtpatches.draw(pixelated = True)
+        self.slowspots.draw(pixelated = True)
         self.tire_list.draw(pixelated = True)
         self.decor_list.draw(pixelated = True)
         self.speedboosts.draw(pixelated = True)
+        
+        for coin in self.coins:
+            if coin[1] <= 0:
+                coin[0].draw(pixelated = True)
         
         if self.other_players:
             for player in self.other_players:
@@ -188,9 +199,9 @@ class Game(arcade.View):
         arcade.draw_text(str(self.fps) + " fps", 15, 44*SCREEN_HEIGHT/45, arcade.color.WHITE, 20*SCALE_MULTIPLIER, font_name="Kenney Mini Square")
         arcade.draw_text(str(self.current_place), SCREEN_HEIGHT/10 + 5, SCREEN_HEIGHT/10 - 5, arcade.color.EERIE_BLACK, 150 * SCALE_MULTIPLIER, font_name="Kenney Blocks")
         arcade.draw_text(str(self.current_place), SCREEN_HEIGHT/10, SCREEN_HEIGHT/10, self.window.place_colors[self.current_place], 150 * SCALE_MULTIPLIER, font_name="Kenney Blocks")
+        arcade.draw_text("$$$: " + str(self.coin_counter), SCREEN_WIDTH, 44*SCREEN_HEIGHT/45, arcade.color.WHITE, 20*SCALE_MULTIPLIER, anchor_x="right", font_name="Kenney Mini Square")
         if self.laps_left > 0:
             arcade.draw_text("Lap " + str(4 - self.laps_left) + "/3", SCREEN_WIDTH/2, 24*SCREEN_HEIGHT/25, arcade.color.WHITE, 50 * SCALE_MULTIPLIER, anchor_x="center", font_name="Kenney Mini Square")
-        #arcade.draw_text(str(self.player.marker.int_for_sorting), SCREEN_WIDTH/2, 9*SCREEN_HEIGHT/10, arcade.color.YELLOW, SCREEN_HEIGHT/20, anchor_x="center", font_name="Kenney Mini Square")
         if self.show_menu:
             self.draw_menu()
         
@@ -253,8 +264,24 @@ class Game(arcade.View):
         else:
             self.col_w_speedboost = False
         
-        if arcade.check_for_collision_with_list(self.player.player_sprite, self.dirtpatches):
+        # slowspot check
+        if arcade.check_for_collision_with_list(self.player.player_sprite, self.slowspots):
             self.player.speed *= 0.96**multiplier
+
+        # coin check
+        for coin in self.coins:
+            if arcade.check_for_collision(self.player.player_sprite, coin[0]):
+                if coin[1] == 0:
+                    self.coin_counter += 1
+                coin[1] = 5
+            for op in self.other_players:
+                if arcade.check_for_collision(op.player_sprite, coin[0]):
+                    coin[1] = 5
+                
+            if coin[1] > 0:
+                coin[1] -= delta_time
+            if coin[1] < 0:
+                coin[1] = 0
 
     def on_mouse_press(self, x, y, button, modifiers):
         if self.show_menu:
@@ -808,9 +835,7 @@ class SwapData(arcade.View):
 class GameWindow(arcade.Window):
     """ Main Window """
     def __init__(self):
-        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT)
-        self.set_location(DIST_FROM_CORNER,DIST_FROM_CORNER)
-        self.set_fullscreen(False)
+        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, "Racing Game", fullscreen=True)
 
         arcade.set_background_color(arcade.color.BLACK)
         
