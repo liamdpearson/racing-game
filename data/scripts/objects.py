@@ -131,6 +131,10 @@ class Player():
             if self.turing_left == False and key == self.left_key:
                 self.player_sprite.angle += 2*self.drift_offset
                 self.turning_left = True
+            
+        if key == arcade.key.SPACE:
+            tex = arcade.load_texture("")
+            Projectile()
 
     def key_released(self, key, modifiers):
         if key in self.pressed_keys:
@@ -263,3 +267,20 @@ class OtherPlayer():
             self.boost_sprite.draw(pixelated=True)
         self.player_sprite.draw(pixelated=True)
         arcade.draw_text(self.name, self.player_sprite.center_x, self.player_sprite.center_y+18*self.player_sprite.scale, arcade.color.WHITE, 12, anchor_x="center", font_name="Kenney Mini Square")
+
+
+class Projectile(arcade.Sprite()):
+    """ base proj class """
+    def __init__(self, x, y, dir, speed, texture, scale, angle):
+        super().__init__(scale=scale, center_x=x, center_y=y,
+                         texture=texture, angle=angle)
+
+        self.change_x = math.cos(dir)*speed
+        self.change_y = math.sin(dir)*speed
+
+
+        # LOOK AT SPRITE DEFAULT DRAW AND UPDATE SO YOU DONT
+        # REMOVE ANYTING NESSECARY WHEN YOU OVERWRITE
+        # CREATE SUBCLASSES
+
+        
