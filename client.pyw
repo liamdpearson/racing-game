@@ -63,8 +63,6 @@ class Game(arcade.View):
         self.show_menu = False
 
         self.coin_counter = 0
-        self.projectiles = []
-        self.projectile_tex = arcade.load_texture("data/sprites/sprite_sheet.png", x=96, y=64, width=32, height=32)
         
         self.setup()
         self.init_menu()
@@ -119,7 +117,11 @@ class Game(arcade.View):
             if not self.window.n.update():
                 self.should_go_back_to_menu = True
 
-            self.update_other_players()
+            try:
+                self.update_other_players()
+            except:
+                print("listening stopped")
+                return None
 
         print("listening stopped")
         return None
@@ -159,15 +161,30 @@ class Game(arcade.View):
         self.menu_background.scale = scale
 
         self.quit_button = arcade.Sprite()
-        self.quit_button.texture = arcade.load_texture("data/sprites/sprite_sheet.png", x = 128, y = 64, width = 32, height = 32)
-        self.quit_button.center_x = SCREEN_WIDTH/2 + 3*self.menu_background.width/8
-        self.quit_button.center_y = SCREEN_HEIGHT/2 + 3*self.menu_background.width/8
-        self.quit_button.scale = scale/8
+        self.quit_button.texture = arcade.load_texture("data/sprites/sprite_sheet.png", x = 96, y = 64, width = 64, height = 32)
+        self.quit_button.center_x = SCREEN_WIDTH/2
+        self.quit_button.center_y = SCREEN_HEIGHT/2 + self.menu_background.width/4
+        self.quit_button.scale = scale/5
+
+        self.menu_button = arcade.Sprite()
+        self.menu_button.texture = arcade.load_texture("data/sprites/sprite_sheet.png", x = 96, y = 96, width = 64, height = 32)
+        self.menu_button.center_x = SCREEN_WIDTH/2
+        self.menu_button.center_y = SCREEN_HEIGHT/2
+        self.menu_button.scale = scale/5
+
+        self.selected = arcade.Sprite()
+        self.selected.texture = arcade.load_texture("data/sprites/sprite_sheet.png", x = 32, y = 96, width = 64, height = 32)
+        self.selected.center_x = SCREEN_WIDTH/2
+        self.selected.center_y = 0
+        self.selected.scale = scale/5
     
     def draw_menu(self):
         self.menu_background.draw(pixelated=True)
         self.quit_button.draw(pixelated=True)
-        
+        self.menu_button.draw(pixelated=True)
+        if self.selected.center_y != 0:
+            self.selected.draw(pixelated=True)
+
     def on_draw(self):
         arcade.start_render()
         
@@ -189,8 +206,6 @@ class Game(arcade.View):
             for player in self.other_players:
                 player.draw()
         self.player.draw()
-        for proj in self.projectiles:
-            proj.draw(pixelated=True)
         
         # draw gui 
         self.gui_camera.use()
@@ -234,9 +249,6 @@ class Game(arcade.View):
         
         for p in self.other_players:
             p.update(multiplier)
-        
-        for proj in self.projectiles:
-            proj.update(multiplier)
         
         cam_pos_x = self.player.player_sprite.center_x - self.cam_offset_x
         cam_pos_y = self.player.player_sprite.center_y - self.cam_offset_y
@@ -289,22 +301,31 @@ class Game(arcade.View):
                 coin[1] -= delta_time
             if coin[1] < 0:
                 coin[1] = 0
+    
+    def on_mouse_motion(self, x, y, dx, dy):
+        if self.show_menu:
+            if self.quit_button.collides_with_point((x,y)):
+                self.selected.center_y = self.quit_button.center_y
+            elif self.menu_button.collides_with_point((x,y)):
+                self.selected.center_y = self.menu_button.center_y
+            else:
+                self.selected.center_y = 0
 
     def on_mouse_press(self, x, y, button, modifiers):
         if self.show_menu:
             if self.quit_button.collides_with_point((x,y)):
                 self.window.close()
+            if self.menu_button.collides_with_point((x,y)):
+                self.window.n = None
+                self.window.mainmenu = MainMenu()
+                self.window.show_view(self.window.mainmenu)
+                self.window.game = None
 
 
     def on_key_press(self, key, modifiers):
         self.player.key_pressed(key, modifiers)
         if key == arcade.key.ESCAPE:
             self.show_menu = not self.show_menu
-        
-        if key == arcade.key.SPACE:
-            p=self.player
-            a = objects.Projectile(p.player_sprite.center_x, p.player_sprite.center_y, p.direction, 25, self.projectile_tex, 3, 0, 10)
-            self.projectiles.append(a)
     
 
     def on_key_release(self, key, modifiers):
@@ -847,7 +868,8 @@ class SwapData(arcade.View):
 class GameWindow(arcade.Window):
     """ Main Window """
     def __init__(self):
-        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, "Racing Game", fullscreen=True)
+        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, "Racing Game", fullscreen=False)
+        self.set_location(DIST_FROM_CORNER,DIST_FROM_CORNER)
 
         arcade.set_background_color(arcade.color.BLACK)
         

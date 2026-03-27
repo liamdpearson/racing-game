@@ -149,12 +149,12 @@ def main(map_index):
             
             if host_left:
                 break
+        
+        leaving_player = player_ref[0]
+        if leaving_player == 0:
+            host_left = True
 
         if started == False:
-            leaving_player = player_ref[0]
-            if leaving_player == 0:
-                host_left = True
-
             pos.pop(leaving_player)
             checkpoint_data.pop(leaving_player)
             all_init_data.pop(leaving_player)
@@ -174,7 +174,7 @@ def main(map_index):
     
     players_in_game = 0
     connected_players = 0
-    while True:
+    while not started:
         try:
             if connected_players < 5:
                 conn, addr = s.accept()
@@ -192,7 +192,3 @@ def main(map_index):
 
         except socket.timeout:
             pass
-            
-        if (started and connected_players == 0) or host_left:
-            print("Closed server")
-            break

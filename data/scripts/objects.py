@@ -264,20 +264,3 @@ class OtherPlayer():
         self.player_sprite.draw(pixelated=True)
         arcade.draw_text(self.name, self.player_sprite.center_x, self.player_sprite.center_y+18*self.player_sprite.scale, arcade.color.WHITE, 12, anchor_x="center", font_name="Kenney Mini Square")
 
-
-class Projectile(arcade.Sprite):
-    """ base proj class """
-    def __init__(self, x, y, dir, speed, tex, scale, angle, rot_speed):
-        super().__init__(scale=scale, center_x=x, center_y=y,
-                         texture=tex, angle=angle)
-
-        self.change_x = math.cos(math.radians(dir+90))*speed
-        self.change_y = math.sin(math.radians(dir+90))*speed
-        self.rot_speed = rot_speed
-        print(dir)
-
-
-    def update(self, multiplier):
-        self.angle += self.rot_speed * multiplier
-        self.center_x += self.change_x
-        self.center_y += self.change_y

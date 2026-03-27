@@ -3,8 +3,8 @@ import arcade
 from data.scripts.soundmanager import SoundManager
 
 
-SCREEN_WIDTH, SCREEN_HEIGHT = arcade.window_commands.get_display_size()
-#SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600
+#SCREEN_WIDTH, SCREEN_HEIGHT = arcade.window_commands.get_display_size()
+SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600
 
 SCALE_MULTIPLIER = SCREEN_WIDTH/2560
 MAP_SCALE_MULTIPLIER = 1.25 * SCALE_MULTIPLIER
