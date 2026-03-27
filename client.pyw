@@ -63,6 +63,8 @@ class Game(arcade.View):
         self.show_menu = False
 
         self.coin_counter = 0
+        self.projectiles = []
+        self.projectile_tex = arcade.load_texture("data/sprites/sprite_sheet.png", x=96, y=64, width=32, height=32)
         
         self.setup()
         self.init_menu()
@@ -187,6 +189,8 @@ class Game(arcade.View):
             for player in self.other_players:
                 player.draw()
         self.player.draw()
+        for proj in self.projectiles:
+            proj.draw(pixelated=True)
         
         # draw gui 
         self.gui_camera.use()
@@ -230,6 +234,9 @@ class Game(arcade.View):
         
         for p in self.other_players:
             p.update(multiplier)
+        
+        for proj in self.projectiles:
+            proj.update(multiplier)
         
         cam_pos_x = self.player.player_sprite.center_x - self.cam_offset_x
         cam_pos_y = self.player.player_sprite.center_y - self.cam_offset_y
@@ -293,6 +300,11 @@ class Game(arcade.View):
         self.player.key_pressed(key, modifiers)
         if key == arcade.key.ESCAPE:
             self.show_menu = not self.show_menu
+        
+        if key == arcade.key.SPACE:
+            p=self.player
+            a = objects.Projectile(p.player_sprite.center_x, p.player_sprite.center_y, p.direction, 25, self.projectile_tex, 3, 0, 10)
+            self.projectiles.append(a)
     
 
     def on_key_release(self, key, modifiers):
