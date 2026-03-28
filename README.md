@@ -8,12 +8,12 @@ Written in Python using the Arcade library.
 
 
 ## Other Features:
-Drifting
-Speed Boosts
-Slow Spots
-Powerups
-Multiple Maps
-Multiple Cars
+1. Drifting
+2. Speed Boosts
+3. Slow Spots
+4. Powerups
+5. Multiple Maps
+6. Multiple Cars
 
 
 
