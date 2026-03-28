@@ -2,7 +2,8 @@ import data.scripts.edit_file as edit_file
 import arcade
 import math
 
-from data.scripts.constants import SCALE_MULTIPLIER, MAP_SCALE_MULTIPLIER, DRIFT_BOOST_SOUND
+from data.scripts.constants import SCALE_MULTIPLIER, MAP_SCALE_MULTIPLIER
+from data.scripts.soundmanager import SoundManager
 
 class Marker():
     def __init__(self, player_x, player_y, map_index):
@@ -54,6 +55,9 @@ class Marker():
 class Player():
     def __init__(self, pos_x, pos_y, car_stats, keybinds, char_index, name, map_index):
         super().__init__()
+
+        self.DRIFT_BOOST_SOUND = SoundManager("drift_boost.wav")
+        self.SHOP_BOOST_SOUND = SoundManager("shop_boost.wav")
         
         # player variables
         self.char_index = char_index
@@ -102,6 +106,10 @@ class Player():
         self.right_key = arcade.key.D
         self.drift_key = keybinds[0]
     
+    def shop_boost(self):
+        self.speed += 20
+        self.SHOP_BOOST_SOUND.force_play_sound(0.2)
+    
 
     def key_pressed(self, key, modifiers):
         if key not in self.pressed_keys:
@@ -144,7 +152,7 @@ class Player():
             self.top_speed /= 0.8
             self.acceleration /= 0.8
             self.handling *= 0.8
-            DRIFT_BOOST_SOUND.play_sound(0.2)
+            self.DRIFT_BOOST_SOUND.play_sound(0.2)
             
             self.direction = self.player_sprite.angle
 

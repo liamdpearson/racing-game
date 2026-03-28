@@ -174,7 +174,7 @@ def main(map_index):
     
     players_in_game = 0
     connected_players = 0
-    while not started:
+    while not started and not host_left:
         try:
             if connected_players < 5:
                 conn, addr = s.accept()

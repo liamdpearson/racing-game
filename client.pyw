@@ -11,13 +11,19 @@ from data.scripts.network import Network
 import data.scripts.server as server
 import data.scripts.edit_file as edit_file
 import data.scripts.objects as objects
-from data.scripts.constants import MAP_SCALE_MULTIPLIER, SCREEN_WIDTH, SCREEN_HEIGHT, SCALE_MULTIPLIER, DIST_FROM_CORNER, SPEED_BOOST_SOUND
+from data.scripts.constants import MAP_SCALE_MULTIPLIER, SCREEN_WIDTH, SCREEN_HEIGHT, SCALE_MULTIPLIER, DIST_FROM_CORNER
+from data.scripts.soundmanager import SoundManager
 
 
 class Game(arcade.View):
     """ Actual Game Function """
     def __init__(self, all_init_data):
         super().__init__()
+
+        self.SPEED_BOOST_SOUND = SoundManager("speed_boost.wav")
+        self.COIN_SOUND = SoundManager("coin.wav")
+        self.BEEP_WAIT_SOUND = SoundManager("beep_wait.wav")
+        self.BEEP_GO_SOUND = SoundManager("beep_go.wav")
 
         print(all_init_data)
 
@@ -65,7 +71,7 @@ class Game(arcade.View):
         self.coin_counter = 0
         
         self.setup()
-        self.init_menu()
+        self.init_ui()
     
     
     
@@ -153,7 +159,7 @@ class Game(arcade.View):
                                     p_data[3], # speed
                                     p_data[4]  # boosting
                                 )
-    def init_menu(self):
+    def init_ui(self):
         scale = 20 * SCALE_MULTIPLIER
         self.menu_background = arcade.Sprite()
         self.menu_background.texture = arcade.load_texture("data/sprites/sprite_sheet.png", x = 160, y = 64, width = 32, height = 32)
@@ -177,6 +183,20 @@ class Game(arcade.View):
         self.selected.center_x = SCREEN_WIDTH/2
         self.selected.center_y = 0
         self.selected.scale = scale/5
+
+        self.powerups = arcade.Sprite()
+        self.powerups.texture = arcade.load_texture("data/sprites/powerups.png")
+        self.powerups.center_x = SCREEN_WIDTH - self.powerups.width*scale/10 - 10
+        self.powerups.center_y = SCREEN_HEIGHT - self.powerups.width*scale/10 - 10
+        self.powerups.scale = scale/5
+
+        self.boost_icon = arcade.Sprite()
+        self.boost_icon.texture = arcade.load_texture("data/sprites/sprite_sheet.png", x = 96, y = 48, width = 16, height = 16)
+        self.boost_icon.center_x = SCREEN_WIDTH/2 - 80 * SCALE_MULTIPLIER
+        self.boost_icon.center_y = SCREEN_HEIGHT/2 + 110 * SCALE_MULTIPLIER
+        self.boost_icon.scale = 3
+
+        
     
     def draw_menu(self):
         self.menu_background.draw(pixelated=True)
@@ -218,9 +238,17 @@ class Game(arcade.View):
         arcade.draw_text(str(self.fps) + " fps", 15, 44*SCREEN_HEIGHT/45, arcade.color.WHITE, 20*SCALE_MULTIPLIER, font_name="Kenney Mini Square")
         arcade.draw_text(str(self.current_place), SCREEN_HEIGHT/10 + 5, SCREEN_HEIGHT/10 - 5, arcade.color.EERIE_BLACK, 150 * SCALE_MULTIPLIER, font_name="Kenney Blocks")
         arcade.draw_text(str(self.current_place), SCREEN_HEIGHT/10, SCREEN_HEIGHT/10, self.window.place_colors[self.current_place], 150 * SCALE_MULTIPLIER, font_name="Kenney Blocks")
-        arcade.draw_text("$$$: " + str(self.coin_counter), SCREEN_WIDTH, 44*SCREEN_HEIGHT/45, arcade.color.WHITE, 20*SCALE_MULTIPLIER, anchor_x="right", font_name="Kenney Mini Square")
+        arcade.draw_text("$$$: " + str(self.coin_counter), SCREEN_WIDTH - self.powerups.width/2 - 10,
+                                                             44*SCREEN_HEIGHT/45 - self.powerups.width - 10, 
+                                                             arcade.color.WHITE, 20*SCALE_MULTIPLIER, anchor_x="center", font_name="Kenney Mini Square")
         if self.laps_left > 0:
             arcade.draw_text("Lap " + str(4 - self.laps_left) + "/3", SCREEN_WIDTH/2, 24*SCREEN_HEIGHT/25, arcade.color.WHITE, 50 * SCALE_MULTIPLIER, anchor_x="center", font_name="Kenney Mini Square")
+
+        self.powerups.draw(pixelated=True)
+        self.boost_icon.draw(pixelated=True)
+        arcade.draw_text(str(self.coin_counter//5), self.boost_icon.center_x, self.boost_icon.center_y, arcade.color.WHITE, 20,
+                         anchor_x="center", anchor_y="center", font_name="Kenney Mini Square")
+
         if self.show_menu:
             self.draw_menu()
         
@@ -242,7 +270,10 @@ class Game(arcade.View):
         self.physics_engine.update()
         if self.locked:
             self.start_counter -= delta_time
-            if self.start_counter < 0:
+            if ((self.start_counter*100) % 100 < 5) and self.start_counter > 1.5:
+                self.BEEP_WAIT_SOUND.play_sound(0.5)
+            if self.start_counter < 1:
+                self.BEEP_GO_SOUND.play_sound(0.5)
                 self.locked = False
         else:
             self.player.update(multiplier)
@@ -279,7 +310,7 @@ class Game(arcade.View):
             self.player.speed += 1.15 * multiplier
             if not self.col_w_speedboost:
                 self.col_w_speedboost = True
-                SPEED_BOOST_SOUND.force_play_sound(0.1)
+                self.SPEED_BOOST_SOUND.force_play_sound(0.1)
         else:
             self.col_w_speedboost = False
         
@@ -292,6 +323,7 @@ class Game(arcade.View):
             if arcade.check_for_collision(self.player.player_sprite, coin[0]):
                 if coin[1] == 0:
                     self.coin_counter += 1
+                    self.COIN_SOUND.force_play_sound(0.5)
                 coin[1] = 5
             for op in self.other_players:
                 if arcade.check_for_collision(op.player_sprite, coin[0]):
@@ -326,6 +358,11 @@ class Game(arcade.View):
         self.player.key_pressed(key, modifiers)
         if key == arcade.key.ESCAPE:
             self.show_menu = not self.show_menu
+        
+        if key == arcade.key.SPACE:
+            if self.coin_counter >= 5:
+                self.player.shop_boost()
+                self.coin_counter -= 5
     
 
     def on_key_release(self, key, modifiers):
@@ -868,7 +905,7 @@ class SwapData(arcade.View):
 class GameWindow(arcade.Window):
     """ Main Window """
     def __init__(self):
-        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, "Racing Game", fullscreen=False)
+        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, "Racing Game", fullscreen=True)
         self.set_location(DIST_FROM_CORNER,DIST_FROM_CORNER)
 
         arcade.set_background_color(arcade.color.BLACK)
