@@ -5,3 +5,15 @@
 Real-time local multiplayer racing game using threading and sockets.
 
 Written in Python using the Arcade library.
+
+
+## Other Features:
+Drifting
+Speed Boosts
+Slow Spots
+Powerups
+Multiple Maps
+Multiple Cars
+
+
+
