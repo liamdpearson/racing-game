@@ -160,41 +160,40 @@ class Game(arcade.View):
                                     p_data[4]  # boosting
                                 )
     def init_ui(self):
-        scale = 20 * SCALE_MULTIPLIER
         self.menu_background = arcade.Sprite()
         self.menu_background.texture = arcade.load_texture("data/sprites/sprite_sheet.png", x = 160, y = 64, width = 32, height = 32)
         self.menu_background.center_x, self.menu_background.center_y = SCREEN_WIDTH/2, SCREEN_HEIGHT/2
-        self.menu_background.scale = scale
+        self.menu_background.scale = 20 * SCALE_MULTIPLIER
 
         self.quit_button = arcade.Sprite()
         self.quit_button.texture = arcade.load_texture("data/sprites/sprite_sheet.png", x = 96, y = 64, width = 64, height = 32)
         self.quit_button.center_x = SCREEN_WIDTH/2
         self.quit_button.center_y = SCREEN_HEIGHT/2 + self.menu_background.width/4
-        self.quit_button.scale = scale/5
+        self.quit_button.scale = 4 * SCALE_MULTIPLIER
 
         self.menu_button = arcade.Sprite()
         self.menu_button.texture = arcade.load_texture("data/sprites/sprite_sheet.png", x = 96, y = 96, width = 64, height = 32)
         self.menu_button.center_x = SCREEN_WIDTH/2
         self.menu_button.center_y = SCREEN_HEIGHT/2
-        self.menu_button.scale = scale/5
+        self.menu_button.scale = 4 * SCALE_MULTIPLIER
 
         self.selected = arcade.Sprite()
         self.selected.texture = arcade.load_texture("data/sprites/sprite_sheet.png", x = 32, y = 96, width = 64, height = 32)
         self.selected.center_x = SCREEN_WIDTH/2
         self.selected.center_y = 0
-        self.selected.scale = scale/5
+        self.selected.scale = 4 * SCALE_MULTIPLIER
 
         self.powerups = arcade.Sprite()
         self.powerups.texture = arcade.load_texture("data/sprites/powerups.png")
-        self.powerups.center_x = SCREEN_WIDTH - self.powerups.width*scale/10 - 10
-        self.powerups.center_y = SCREEN_HEIGHT - self.powerups.width*scale/10 - 10
-        self.powerups.scale = scale/5
+        self.powerups.center_x = SCREEN_WIDTH - self.powerups.width*2*SCALE_MULTIPLIER - 10
+        self.powerups.center_y = SCREEN_HEIGHT - self.powerups.width*2*SCALE_MULTIPLIER - 10
+        self.powerups.scale = 4 * SCALE_MULTIPLIER
 
         self.boost_icon = arcade.Sprite()
         self.boost_icon.texture = arcade.load_texture("data/sprites/sprite_sheet.png", x = 96, y = 48, width = 16, height = 16)
         self.boost_icon.center_x = SCREEN_WIDTH/2 - 80 * SCALE_MULTIPLIER
-        self.boost_icon.center_y = SCREEN_HEIGHT/2 + 110 * SCALE_MULTIPLIER
-        self.boost_icon.scale = 3
+        self.boost_icon.center_y = SCREEN_HEIGHT/2
+        self.boost_icon.scale = 3 * SCALE_MULTIPLIER
 
         
     
@@ -246,7 +245,7 @@ class Game(arcade.View):
 
         self.powerups.draw(pixelated=True)
         self.boost_icon.draw(pixelated=True)
-        arcade.draw_text(str(self.coin_counter//5), self.boost_icon.center_x, self.boost_icon.center_y, arcade.color.WHITE, 20,
+        arcade.draw_text(str(self.coin_counter//5), self.boost_icon.center_x, self.boost_icon.center_y, arcade.color.WHITE, 25*SCALE_MULTIPLIER,
                          anchor_x="center", anchor_y="center", font_name="Kenney Mini Square")
 
         if self.show_menu:
@@ -492,8 +491,10 @@ class MainMenu(arcade.View):
         arcade.start_render()
         self.manager.draw()
 
-        arcade.draw_text("Version Alpha 1.2", SCREEN_WIDTH/50, SCREEN_HEIGHT/25, arcade.color.WHITE, 30 * SCALE_MULTIPLIER, font_name="Kenney Mini Square")
-        arcade.draw_text("Racing Game", SCREEN_WIDTH/2, 3*SCREEN_HEIGHT/4, arcade.color.WHITE, SCREEN_WIDTH/20, anchor_x="center", font_name="Kenney Mini Square")
+        arcade.draw_text("Version Alpha 1.3", SCREEN_WIDTH/50, SCREEN_HEIGHT/25, arcade.color.WHITE, 30 * SCALE_MULTIPLIER, font_name="Kenney Mini Square")
+        arcade.draw_text("Speed Racing", SCREEN_WIDTH/2 + 10*SCALE_MULTIPLIER, 3*SCREEN_HEIGHT/4 - 10*SCALE_MULTIPLIER, arcade.color.EERIE_BLACK, SCREEN_WIDTH/20, anchor_x="center", font_name="Kenney Mini Square")
+        arcade.draw_text("Speed Racing", SCREEN_WIDTH/2, 3*SCREEN_HEIGHT/4, arcade.color.ELECTRIC_PURPLE, SCREEN_WIDTH/20, anchor_x="center", font_name="Kenney Mini Square")
+        
 
 
 class ChooseMap(arcade.View):
