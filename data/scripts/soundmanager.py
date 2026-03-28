@@ -12,3 +12,9 @@ class SoundManager:
         
     def force_play_sound(self, volume=1.0):
         self.sound_player = arcade.play_sound(self.sound, volume = volume)
+    
+    def set_volume(self, volume):
+        self.sound.set_volume(volume, self.sound_player)
+    
+    def stop_sound(self):
+        arcade.stop_sound(self.sound_player)

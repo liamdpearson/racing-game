@@ -24,6 +24,7 @@ class Game(arcade.View):
         self.COIN_SOUND = SoundManager("coin.wav")
         self.BEEP_WAIT_SOUND = SoundManager("beep_wait.wav")
         self.BEEP_GO_SOUND = SoundManager("beep_go.wav")
+        self.ENGINE_SOUND = SoundManager("engine.wav")
 
         print(all_init_data)
 
@@ -138,12 +139,14 @@ class Game(arcade.View):
         data = self.window.n.all_data
         if data:
             if data[-1] == "f":
+                self.ENGINE_SOUND.stop_sound()
                 finished_players = data.split()[-1][:-1]
                 self.window.done = True
                 self.window.n = None
                 self.window.endscreen = EndScreen(finished_players, self.players)
                 self.window.show_view(self.window.endscreen)
                 self.window.game = None
+                self.ENGINE_SOUND.stop_sound()
             else:
                 self.current_place = int(data[-1])
                 self.all_positions = data[:-1].split()
@@ -239,7 +242,7 @@ class Game(arcade.View):
         arcade.draw_text(str(self.current_place), SCREEN_HEIGHT/10, SCREEN_HEIGHT/10, self.window.place_colors[self.current_place], 150 * SCALE_MULTIPLIER, font_name="Kenney Blocks")
         arcade.draw_text("$$$: " + str(self.coin_counter), SCREEN_WIDTH - self.powerups.width/2 - 10,
                                                              44*SCREEN_HEIGHT/45 - self.powerups.width - 10, 
-                                                             arcade.color.WHITE, 20*SCALE_MULTIPLIER, anchor_x="center", font_name="Kenney Mini Square")
+                                                             arcade.color.WHITE, 30*SCALE_MULTIPLIER, anchor_x="center", font_name="Kenney Mini Square")
         if self.laps_left > 0:
             arcade.draw_text("Lap " + str(4 - self.laps_left) + "/3", SCREEN_WIDTH/2, 24*SCREEN_HEIGHT/25, arcade.color.WHITE, 50 * SCALE_MULTIPLIER, anchor_x="center", font_name="Kenney Mini Square")
 
@@ -332,6 +335,10 @@ class Game(arcade.View):
                 coin[1] -= delta_time
             if coin[1] < 0:
                 coin[1] = 0
+
+        # engine sound
+        self.ENGINE_SOUND.play_sound()
+        self.ENGINE_SOUND.set_volume(0.1 + 0.2 * self.player.speed/self.player.top_speed)
     
     def on_mouse_motion(self, x, y, dx, dy):
         if self.show_menu:
@@ -351,6 +358,7 @@ class Game(arcade.View):
                 self.window.mainmenu = MainMenu()
                 self.window.show_view(self.window.mainmenu)
                 self.window.game = None
+                self.ENGINE_SOUND.stop_sound()
 
 
     def on_key_press(self, key, modifiers):
@@ -493,7 +501,7 @@ class MainMenu(arcade.View):
 
         arcade.draw_text("Version Alpha 1.3", SCREEN_WIDTH/50, SCREEN_HEIGHT/25, arcade.color.WHITE, 30 * SCALE_MULTIPLIER, font_name="Kenney Mini Square")
         arcade.draw_text("Speed Racing", SCREEN_WIDTH/2 + 10*SCALE_MULTIPLIER, 3*SCREEN_HEIGHT/4 - 10*SCALE_MULTIPLIER, arcade.color.EERIE_BLACK, SCREEN_WIDTH/20, anchor_x="center", font_name="Kenney Mini Square")
-        arcade.draw_text("Speed Racing", SCREEN_WIDTH/2, 3*SCREEN_HEIGHT/4, arcade.color.ELECTRIC_PURPLE, SCREEN_WIDTH/20, anchor_x="center", font_name="Kenney Mini Square")
+        arcade.draw_text("Speed Racing", SCREEN_WIDTH/2, 3*SCREEN_HEIGHT/4, arcade.color.WHITE, SCREEN_WIDTH/20, anchor_x="center", font_name="Kenney Mini Square")
         
 
 
