@@ -235,16 +235,20 @@ class Game(arcade.View):
             arcade.draw_text(int(self.start_counter), SCREEN_WIDTH/2, 
                              SCREEN_HEIGHT/2, arcade.color.YELLOW,
                              80, anchor_x="center", font_name="Kenney Mini Square")
-
-        #draw fps
-        arcade.draw_text(str(self.fps) + " fps", 15, 44*SCREEN_HEIGHT/45, arcade.color.WHITE, 20*SCALE_MULTIPLIER, font_name="Kenney Mini Square")
+            
+        # draw current place
         arcade.draw_text(str(self.current_place), SCREEN_HEIGHT/10 + 5, SCREEN_HEIGHT/10 - 5, arcade.color.EERIE_BLACK, 150 * SCALE_MULTIPLIER, font_name="Kenney Blocks")
         arcade.draw_text(str(self.current_place), SCREEN_HEIGHT/10, SCREEN_HEIGHT/10, self.window.place_colors[self.current_place], 150 * SCALE_MULTIPLIER, font_name="Kenney Blocks")
-        arcade.draw_text("$$$: " + str(self.coin_counter), SCREEN_WIDTH - self.powerups.width/2 - 10,
-                                                             44*SCREEN_HEIGHT/45 - self.powerups.width - 10, 
+
+        # draw info
+        arcade.draw_text(str(self.fps) + " fps", SCREEN_WIDTH - self.powerups.width * 1.5 - 10, 
+                                                             24*SCREEN_HEIGHT/25, arcade.color.WHITE, 30*SCALE_MULTIPLIER, anchor_x="center", font_name="Kenney Mini Square")
+        arcade.draw_text("$$$: " + str(self.coin_counter), SCREEN_WIDTH - self.powerups.width * 1.5 - 10,
+                                                             23*SCREEN_HEIGHT/25, 
                                                              arcade.color.WHITE, 30*SCALE_MULTIPLIER, anchor_x="center", font_name="Kenney Mini Square")
         if self.laps_left > 0:
-            arcade.draw_text("Lap " + str(4 - self.laps_left) + "/3", SCREEN_WIDTH/2, 24*SCREEN_HEIGHT/25, arcade.color.WHITE, 50 * SCALE_MULTIPLIER, anchor_x="center", font_name="Kenney Mini Square")
+            arcade.draw_text("Lap " + str(4 - self.laps_left) + "/3", SCREEN_WIDTH - self.powerups.width * 1.5 - 10, 
+                                                             22*SCREEN_HEIGHT/25, arcade.color.WHITE, 30*SCALE_MULTIPLIER, anchor_x="center", font_name="Kenney Mini Square")
 
         self.powerups.draw(pixelated=True)
         self.boost_icon.draw(pixelated=True)
