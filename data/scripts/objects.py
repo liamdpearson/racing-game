@@ -108,6 +108,7 @@ class Player():
     
     def shop_boost(self):
         self.speed += 20
+        self.boost_timer += 0.5
         self.SHOP_BOOST_SOUND.force_play_sound(0.2)
     
 
