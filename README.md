@@ -6,14 +6,20 @@ Real-time local multiplayer racing game using threading and sockets.
 
 Written in Python using the Arcade library.
 
+Run "pip install arcade==2.6.17" to install right version.
 
-## Other Features:
+
+## Features:
 1. Drifting
 2. Speed Boosts
 3. Slow Spots
 4. Powerups
-5. Multiple Maps
-6. Multiple Cars
+5. Coins
+6. SFX
+7. Multiple Maps
+8. Multiple Cars
+9. Other Player location prediction
+10. Robust server
 
 
 
