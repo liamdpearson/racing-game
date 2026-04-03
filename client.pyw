@@ -139,6 +139,7 @@ class Game(arcade.View):
         data = self.window.n.all_data
         if data:
             if data[-1] == "f":
+                self.ENGINE_SOUND.set_volume(0)
                 self.ENGINE_SOUND.stop_sound()
                 finished_players = data.split()[-1][:-1]
                 self.window.done = True
@@ -146,7 +147,6 @@ class Game(arcade.View):
                 self.window.endscreen = EndScreen(finished_players, self.players)
                 self.window.show_view(self.window.endscreen)
                 self.window.game = None
-                self.ENGINE_SOUND.stop_sound()
             else:
                 self.current_place = int(data[-1])
                 self.all_positions = data[:-1].split()
@@ -300,6 +300,10 @@ class Game(arcade.View):
                                             self.player.draw_boost,
                                             self.player.marker.int_for_sorting
                                             ))
+
+            # engine sound
+            self.ENGINE_SOUND.play_sound()
+            self.ENGINE_SOUND.set_volume(0.1 + abs(0.2 * self.player.speed/self.player.top_speed))
             
         # finish line check
         if arcade.check_for_collision_with_list(self.player.player_sprite, self.finishline):
@@ -339,10 +343,6 @@ class Game(arcade.View):
                 coin[1] -= delta_time
             if coin[1] < 0:
                 coin[1] = 0
-
-        # engine sound
-        self.ENGINE_SOUND.play_sound()
-        self.ENGINE_SOUND.set_volume(0.1 + 0.2 * self.player.speed/self.player.top_speed)
     
     def on_mouse_motion(self, x, y, dx, dy):
         if self.show_menu:
