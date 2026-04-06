@@ -20,6 +20,8 @@ class Game(arcade.View):
     def __init__(self, all_init_data):
         super().__init__()
 
+        self.time = 0
+
         self.SPEED_BOOST_SOUND = SoundManager("speed_boost.wav")
         self.COIN_SOUND = SoundManager("coin.wav")
         self.BEEP_WAIT_SOUND = SoundManager("beep_wait.wav")
@@ -144,7 +146,7 @@ class Game(arcade.View):
                 finished_players = data.split()[-1][:-1]
                 self.window.done = True
                 self.window.n = None
-                self.window.endscreen = EndScreen(finished_players, self.players)
+                self.window.endscreen = EndScreen(finished_players, self.players, self.time)
                 self.window.show_view(self.window.endscreen)
                 self.window.game = None
             else:
@@ -246,20 +248,26 @@ class Game(arcade.View):
         arcade.draw_text("$$$: " + str(self.coin_counter), SCREEN_WIDTH - self.powerups.width * 1.5 - 10,
                                                              23*SCREEN_HEIGHT/25, 
                                                              arcade.color.WHITE, 30*SCALE_MULTIPLIER, anchor_x="center", font_name="Kenney Mini Square")
-        if self.laps_left > 0:
-            arcade.draw_text("Lap " + str(4 - self.laps_left) + "/3", SCREEN_WIDTH - self.powerups.width * 1.5 - 10, 
-                                                             22*SCREEN_HEIGHT/25, arcade.color.WHITE, 30*SCALE_MULTIPLIER, anchor_x="center", font_name="Kenney Mini Square")
-
+        
         self.powerups.draw(pixelated=True)
         self.boost_icon.draw(pixelated=True)
         arcade.draw_text(str(self.coin_counter//5), self.boost_icon.center_x, self.boost_icon.center_y, arcade.color.WHITE, 25*SCALE_MULTIPLIER,
                          anchor_x="center", anchor_y="center", font_name="Kenney Mini Square")
+        
+        if self.laps_left > 0:
+            arcade.draw_text("Lap " + str(4 - self.laps_left) + "/3", SCREEN_WIDTH - self.powerups.width * 1.5 - 10, 
+                                                             22*SCREEN_HEIGHT/25, arcade.color.WHITE, 30*SCALE_MULTIPLIER, anchor_x="center", font_name="Kenney Mini Square")
+        else:
+            arcade.draw_text("Finished!", SCREEN_WIDTH/2 + 5*SCALE_MULTIPLIER, SCREEN_HEIGHT/2 - 5*SCALE_MULTIPLIER, arcade.color.BLACK, 100*SCALE_MULTIPLIER, anchor_x="center", font_name="Kenney Mini Square")
+            arcade.draw_text("Finished!", SCREEN_WIDTH/2, SCREEN_HEIGHT/2, arcade.color.WHITE, 100*SCALE_MULTIPLIER, anchor_x="center", font_name="Kenney Mini Square")
 
         if self.show_menu:
             self.draw_menu()
         
         
     def on_update(self, delta_time):
+
+        self.time += delta_time
 
         #check if should go back to menu
         if self.should_go_back_to_menu:
@@ -386,11 +394,16 @@ class Game(arcade.View):
 
 class EndScreen(arcade.View):
     """ Menu class to host and connect """
-    def __init__(self, order, players):
+    def __init__(self, order, players, time):
         super().__init__()
     
         self.order = order
         self.players = players
+        self.time = time
+
+        self.minutes = int(self.time // 60)
+        self.seconds = int(self.time % 60)
+        self.milliseconds = int((self.time - int(self.time)) * 100)
         
         # init gui manager
         self.manager = arcade.gui.UIManager()
@@ -429,6 +442,8 @@ class EndScreen(arcade.View):
 
         for i in range(len(self.order)):
             arcade.draw_text(str(i+1) + ". " + self.players[int(self.order[i])][:-1], SCREEN_WIDTH/2, 3 * SCREEN_HEIGHT/4 - 50*i, self.window.place_colors[i+1], 40, anchor_x="center", font_name="Kenney Mini Square")
+
+        arcade.draw_text(f"Time: {self.minutes}:{self.seconds:02d}.{self.milliseconds:02d}", SCREEN_WIDTH/2, SCREEN_HEIGHT/2, arcade.color.WHITE, 30, anchor_x="center", font_name="Kenney Mini Square")
 
 
 class MainMenu(arcade.View):
