@@ -144,7 +144,8 @@ def main(map_index):
                     lobby_loop(data)
                 else:
                     game_loop(read_pos(data))
-            except:
+            except socket.error as e:
+                print(f"Socket error occurred: {e}")
                 break
             
             if host_left:

@@ -42,6 +42,7 @@ class Network:
             self.all_data = self.client.recv(2048).decode()
             return True
         except socket.error as e:
+            print(f"Socket error occurred (update network.py): {e}")
             return False
 
     def send(self, data):
@@ -50,6 +51,6 @@ class Network:
     def recv(self):
         try:
             return self.client.recv(2048).decode()
-        except socket.error:
-            print("Could not receive data")
+        except socket.error as e:
+            print(f"Socket error occurred (recv network.py): {e}")
             return None

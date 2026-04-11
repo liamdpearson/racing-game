@@ -128,8 +128,8 @@ class Game(arcade.View):
 
             try:
                 self.update_other_players()
-            except:
-                print("listening stopped")
+            except Exception as e: 
+                print(f"Error occurred while listening for updates: {e}")
                 return None
 
         print("listening stopped")
@@ -263,11 +263,10 @@ class Game(arcade.View):
 
         if self.show_menu:
             self.draw_menu()
-        
+
+
         
     def on_update(self, delta_time):
-
-        self.time += delta_time
 
         #check if should go back to menu
         if self.should_go_back_to_menu:
@@ -291,6 +290,8 @@ class Game(arcade.View):
                 self.locked = False
         else:
             self.player.update(multiplier)
+            if self.laps_left != 0:
+                self.time += delta_time
         
         for p in self.other_players:
             p.update(multiplier)
@@ -333,7 +334,7 @@ class Game(arcade.View):
             self.col_w_speedboost = False
         
         # slowspot check
-        if arcade.check_for_collision_with_list(self.player.player_sprite, self.slowspots):
+        if arcade.check_for_collision_with_list(self.player.player_sprite, self.slowspots) or arcade.check_for_collision_with_list(self.player.player_sprite, self.wall_list):
             self.player.speed *= 0.96**multiplier
 
         # coin check
@@ -443,7 +444,7 @@ class EndScreen(arcade.View):
         for i in range(len(self.order)):
             arcade.draw_text(str(i+1) + ". " + self.players[int(self.order[i])][:-1], SCREEN_WIDTH/2, 3 * SCREEN_HEIGHT/4 - 50*i, self.window.place_colors[i+1], 40, anchor_x="center", font_name="Kenney Mini Square")
 
-        arcade.draw_text(f"Time: {self.minutes}:{self.seconds:02d}.{self.milliseconds:02d}", SCREEN_WIDTH/2, SCREEN_HEIGHT/2, arcade.color.WHITE, 30, anchor_x="center", font_name="Kenney Mini Square")
+        arcade.draw_text(f"Your Time: {self.minutes}:{self.seconds:02d}.{self.milliseconds:02d}", SCREEN_WIDTH/2, 7*SCREEN_HEIGHT/8, arcade.color.WHITE, 30, anchor_x="center", font_name="Kenney Mini Square")
 
 
 class MainMenu(arcade.View):
@@ -669,7 +670,8 @@ class LobbyHost(arcade.View):
             if not self.all_init_data:
                 back_to_menu()
                 return
-        except:
+        except Exception as e:
+            print(f"Error occurred while receiving init data: {e}")
             back_to_menu()
             return
         
@@ -750,7 +752,8 @@ class LobbyGuest(arcade.View):
                 if not self.all_init_data:
                     self.leave()
                     return
-            except:
+            except Exception as e:
+                print(f"Error occurred while receiving init data: {e}")
                 self.leave()
                 return
 
@@ -933,7 +936,7 @@ class SwapData(arcade.View):
 class GameWindow(arcade.Window):
     """ Main Window """
     def __init__(self):
-        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, "Racing Game", fullscreen=True)
+        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, "Racing Game", fullscreen=True, vsync=True)
         self.set_location(DIST_FROM_CORNER,DIST_FROM_CORNER)
 
         arcade.set_background_color(arcade.color.BLACK)
