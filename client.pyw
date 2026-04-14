@@ -90,10 +90,13 @@ class Game(arcade.View):
         self.tire_list = self.tile_map.sprite_lists["AllWalls"]
         self.decor_list = self.tile_map.sprite_lists["Decor"]
         self.wall_list = self.tile_map.sprite_lists["Walls"]
+        self.wall_list.enable_spatial_hashing() 
         self.floor_list = self.tile_map.sprite_lists["Floor"]
         self.finishline = self.tile_map.sprite_lists["FinishLine"]
         self.speedboosts = self.tile_map.sprite_lists["SpeedBoosts"]
+        self.speedboosts.enable_spatial_hashing() 
         self.slowspots = self.tile_map.sprite_lists["SlowSpots"]
+        self.slowspots.enable_spatial_hashing() 
         self.background = self.tile_map.sprite_lists["Background"]
         
         # pos x, pos y, move speed, anim speed, char index, 
@@ -101,7 +104,6 @@ class Game(arcade.View):
         for player in self.other_players_data:
             op = objects.OtherPlayer(int(player[-1]), player[:-1])
             self.other_players.append(op)
-            self.wall_list.append(op.player_sprite)
             print("op created")
         
         self.listen_thread.start()
@@ -268,6 +270,13 @@ class Game(arcade.View):
         
     def on_update(self, delta_time):
 
+        # engine sound
+        self.ENGINE_SOUND.play_sound()
+        self.ENGINE_SOUND.set_volume(0.1 + abs(0.2 * self.player.speed/self.player.top_speed))
+
+        # cache player sprite
+        player_sprite = self.player.player_sprite
+
         #check if should go back to menu
         if self.should_go_back_to_menu:
             self.window.n = None
@@ -279,8 +288,9 @@ class Game(arcade.View):
             self.fps = int(1 / delta_time)
 
         multiplier = 60*delta_time
-            
         self.physics_engine.update()
+
+        # hold players still before starting and play beeps
         if self.locked:
             self.start_counter -= delta_time
             if ((self.start_counter*100) % 100 < 5) and self.start_counter > 1.5:
@@ -293,29 +303,32 @@ class Game(arcade.View):
             if self.laps_left != 0:
                 self.time += delta_time
         
-        for p in self.other_players:
+        # update other players
+        for p in self.other_players: 
             p.update(multiplier)
         
-        cam_pos_x = self.player.player_sprite.center_x - self.cam_offset_x
-        cam_pos_y = self.player.player_sprite.center_y - self.cam_offset_y
-        
+        # camera stuff
+        cam_pos_x = player_sprite.center_x - self.cam_offset_x
+        cam_pos_y = player_sprite.center_y - self.cam_offset_y
         self.camera.move_to((cam_pos_x, cam_pos_y))
+
         
+        # store player data in network class to send to server
         if self.window.n:
-            self.window.n.p_data = make_pos((self.player.player_sprite.center_x / MAP_SCALE_MULTIPLIER,
-                                            self.player.player_sprite.center_y / MAP_SCALE_MULTIPLIER,
-                                            self.player.player_sprite.angle,
+            self.window.n.p_data = make_pos((player_sprite.center_x / MAP_SCALE_MULTIPLIER,
+                                            player_sprite.center_y / MAP_SCALE_MULTIPLIER,
+                                            player_sprite.angle,
                                             self.player.speed,
                                             self.player.draw_boost,
                                             self.player.marker.int_for_sorting
                                             ))
+        
 
-            # engine sound
-            self.ENGINE_SOUND.play_sound()
-            self.ENGINE_SOUND.set_volume(0.1 + abs(0.2 * self.player.speed/self.player.top_speed))
-            
+        # COLLISION CHECKS 
+        #---------------------------------------------------------------------------------------#
+
         # finish line check
-        if arcade.check_for_collision_with_list(self.player.player_sprite, self.finishline):
+        if arcade.check_for_collision_with_list(player_sprite, self.finishline):
             if self.player.marker.total_checkpoints == self.player.marker.checkpoints_per_lap:
                 self.laps_left = 2
             elif self.player.marker.total_checkpoints == self.player.marker.checkpoints_per_lap * 2:
@@ -325,7 +338,7 @@ class Game(arcade.View):
                 self.player.marker.total_checkpoints += 1
         
         # speedboost check
-        if arcade.check_for_collision_with_list(self.player.player_sprite, self.speedboosts):
+        if arcade.check_for_collision_with_list(player_sprite, self.speedboosts):
             self.player.speed += 1.15 * multiplier
             if not self.col_w_speedboost:
                 self.col_w_speedboost = True
@@ -334,24 +347,27 @@ class Game(arcade.View):
             self.col_w_speedboost = False
         
         # slowspot check
-        if arcade.check_for_collision_with_list(self.player.player_sprite, self.slowspots):
+        if arcade.check_for_collision_with_list(player_sprite, self.slowspots):
             self.player.speed *= 0.96**multiplier
 
-        # coin check
-        for coin in self.coins:
-            if arcade.check_for_collision(self.player.player_sprite, coin[0]):
-                if coin[1] == 0:
-                    self.coin_counter += 1
-                    self.COIN_SOUND.force_play_sound(0.5)
-                coin[1] = 5
-            for op in self.other_players:
-                if arcade.check_for_collision(op.player_sprite, coin[0]):
-                    coin[1] = 5
-                
-            if coin[1] > 0:
-                coin[1] -= delta_time
-            if coin[1] < 0:
-                coin[1] = 0
+        hit_coins = arcade.check_for_collision_with_list(
+            player_sprite, self.coin_list
+        )
+
+        for coin in hit_coins:
+            c = self.coins[self.coin_list.index(coin)]
+            if c[1] == 0:
+                self.coin_counter += 1
+                self.COIN_SOUND.force_play_sound(0.5)
+                c[1] = 5
+            
+            if c[1] > 0:
+                c[1] -= delta_time
+            if c[1] < 0:
+                c[1] = 0
+        #---------------------------------------------------------------------------------------#
+
+
     
     def on_mouse_motion(self, x, y, dx, dy):
         if self.show_menu:
@@ -936,7 +952,7 @@ class SwapData(arcade.View):
 class GameWindow(arcade.Window):
     """ Main Window """
     def __init__(self):
-        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, "Racing Game", fullscreen=True, vsync=True)
+        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, "Racing Game", fullscreen=True)
         self.set_location(DIST_FROM_CORNER,DIST_FROM_CORNER)
 
         arcade.set_background_color(arcade.color.BLACK)
