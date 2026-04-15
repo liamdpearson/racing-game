@@ -1,5 +1,6 @@
 import socket
 from _thread import *
+import time
 
 
 
@@ -38,15 +39,13 @@ def make_pos(tup):
     return stra
 
 def lis_to_str(lis):
-    s = ""
-    for i in lis:
-        s = s + i + " "
+    s = " ".join(i for i in lis)
     return s
 
+    
+
 def convert_pos(lis):
-    s = ""
-    for i in lis:
-        s = s + make_pos(i) + " "
+    s = " ".join(make_pos(i) for i in lis)
     return s
 
     
@@ -133,6 +132,10 @@ def main(map_index):
         conn.send(str.encode(make_pos(pos[player])))
 
         while True:
+
+            start = time.time()
+
+
             try:
                 data = conn.recv(2048).decode()
                 if not data:
@@ -149,6 +152,8 @@ def main(map_index):
             
             if host_left:
                 break
+                
+            time.sleep(max(0, 1/60 - (time.time() - start)))
         
         leaving_player = player_ref[0]
         if leaving_player == 0:

@@ -220,7 +220,6 @@ class Game(arcade.View):
             edit_file.set_fps(1 if self.show_fps else 0)
             self.fps_bool.text = "FPS: Shown" if self.show_fps else "FPS: Hidden"
 
-        # Create a widget to hold the v_box widget, that will center the buttons
         self.manager.add(
             arcade.gui.UIAnchorWidget(
                 anchor_x="center_x",
@@ -372,6 +371,7 @@ class Game(arcade.View):
             self.window.n = None
             self.window.mainmenu = MainMenu()
             self.window.show_view(self.window.mainmenu)
+            self.ENGINE_SOUND.stop_sound()
 
         #update fps
         if delta_time > 0:
@@ -915,7 +915,7 @@ class GetAddress(arcade.View):
                             arcade.key.KEY_8, arcade.key.KEY_9,
                             arcade.key.PERIOD)
         
-        self.server = ""
+        self.server = "192.168.0.107"
         self.invalid = 0
 
         # init gui manager
