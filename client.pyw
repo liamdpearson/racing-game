@@ -73,6 +73,8 @@ class Game(arcade.View):
         self.show_menu = False
 
         self.coin_counter = 0
+
+        self.hit_coin = -1
         
         self.setup()
         self.init_ui()
@@ -90,6 +92,10 @@ class Game(arcade.View):
         self.coin_map = {}
         for sprite in self.coin_list:
             self.coin_map[sprite] = 0
+
+        self.coin_index_map = {}
+        for i in range(len(self.coin_list)):
+            self.coin_index_map[self.coin_list[i]] = i
 
 
         self.tire_list = self.tile_map.sprite_lists["AllWalls"]
@@ -124,53 +130,9 @@ class Game(arcade.View):
         # camera offset
         self.cam_offset_x = SCREEN_WIDTH/2
         self.cam_offset_y = SCREEN_HEIGHT/2
-
-        
     
+
     
-    def listen_for_updates(self):
-        while not self.window.done and self.window.n:
-            if not self.window.n.update():
-                self.should_go_back_to_menu = True
-
-            try:
-                self.update_other_players()
-            except Exception as e: 
-                print(f"Error occurred while listening for updates: {e}")
-                return None
-
-        print("listening stopped")
-        return None
-
-
-
-    def update_other_players(self):
-        data = self.window.n.all_data
-        if data:
-            if data[-1] == "f":
-                self.ENGINE_SOUND.set_volume(0)
-                self.ENGINE_SOUND.stop_sound()
-                finished_players = data.split()[-1][:-1]
-                self.window.done = True
-                self.window.n = None
-                self.window.endscreen = EndScreen(finished_players, self.players, self.time)
-                self.window.show_view(self.window.endscreen)
-                self.window.game = None
-            else:
-                self.current_place = int(data[-1])
-                self.all_positions = data[:-1].split()
-                del self.all_positions[self.player_index]
-                if self.all_positions:
-                    for i in range(len(self.all_positions)):
-                            p_data = read_pos(self.all_positions[i])
-                            if len(p_data) == 5:
-                                self.other_players[i].accept_data(
-                                    p_data[0] * MAP_SCALE_MULTIPLIER, # x
-                                    p_data[1] * MAP_SCALE_MULTIPLIER, # y
-                                    p_data[2], # angle
-                                    p_data[3], # speed
-                                    p_data[4]  # boosting
-                                )
     def init_ui(self):
 
         sprite_sheet = arcade.load_texture("data/sprites/sprite_sheet.png")
@@ -277,7 +239,55 @@ class Game(arcade.View):
                 child=self.v_box2)
         )
 
-        
+    
+    
+    def listen_for_updates(self):
+        while not self.window.done and self.window.n:
+            if not self.window.n.update():
+                self.should_go_back_to_menu = True
+
+            try:
+                self.update_other_players()
+            except Exception as e: 
+                print(f"Error occurred while listening for updates: {e}")
+                return None
+
+        print("listening stopped")
+        return None
+
+
+
+    def update_other_players(self):
+        data = self.window.n.all_data
+        if data:
+            data = str(data)
+            if data[-1] == "f":
+                self.ENGINE_SOUND.set_volume(0)
+                self.ENGINE_SOUND.stop_sound()
+                finished_players = data.split()[-1][:-1]
+                self.window.done = True
+                self.window.n = None
+                self.window.endscreen = EndScreen(finished_players, self.players, self.time)
+                self.window.show_view(self.window.endscreen)
+                self.window.game = None
+            else:
+                self.current_place = int(data[-1])
+                self.all_positions = data[:-1].split()
+                del self.all_positions[self.player_index]
+                if self.all_positions:
+                    for i in range(len(self.all_positions)):
+                            p_data = read_pos(self.all_positions[i])
+                            if len(p_data) == 6:
+                                self.other_players[i].accept_data(
+                                    p_data[0] * MAP_SCALE_MULTIPLIER, # x
+                                    p_data[1] * MAP_SCALE_MULTIPLIER, # y
+                                    p_data[2], # angle
+                                    p_data[3], # speed
+                                    p_data[4]  # boosting
+                                )
+                                if p_data[5] > -1:
+                                    self.coin_map[self.coin_list[p_data[5]]] = 5
+
     
     def draw_menu(self):
         
@@ -405,10 +415,9 @@ class Game(arcade.View):
                                             player_sprite.angle,
                                             self.player.speed,
                                             self.player.draw_boost,
+                                            self.hit_coin,
                                             self.player.marker.int_for_sorting
                                             ))
-        
-
         # COLLISION CHECKS 
         #---------------------------------------------------------------------------------------#
 
@@ -466,12 +475,16 @@ class Game(arcade.View):
             player_sprite, self.coin_list
         )
 
+        if not hit_coins:
+            self.hit_coin = -1
+
         for coin in hit_coins:
             if self.coin_map[coin] == 0:
                 self.coin_counter += 1
                 self.COIN_SOUND.force_play_sound(0.5)
                 self.coin_map[coin] = 5
-        
+                self.hit_coin = self.coin_index_map[coin]
+
         # update coin timers
         for coin in self.coin_list:
             if self.coin_map[coin] > 0:
@@ -629,7 +642,7 @@ class MainMenu(arcade.View):
         arcade.start_render()
         self.manager.draw()
 
-        arcade.draw_text("Version Alpha 1.3.3", SCREEN_WIDTH/50, SCREEN_HEIGHT/25, arcade.color.WHITE, 30 * SCALE_MULTIPLIER, font_name="Kenney Mini Square")
+        arcade.draw_text("Version Alpha 1.4", SCREEN_WIDTH/50, SCREEN_HEIGHT/25, arcade.color.WHITE, 30 * SCALE_MULTIPLIER, font_name="Kenney Mini Square")
         arcade.draw_text("Speed Racing", SCREEN_WIDTH/2 + 10*SCALE_MULTIPLIER, 3*SCREEN_HEIGHT/4 - 10*SCALE_MULTIPLIER, arcade.color.EERIE_BLACK, SCREEN_WIDTH/20, anchor_x="center", font_name="Kenney Mini Square")
         arcade.draw_text("Speed Racing", SCREEN_WIDTH/2, 3*SCREEN_HEIGHT/4, arcade.color.WHITE, SCREEN_WIDTH/20, anchor_x="center", font_name="Kenney Mini Square")
         

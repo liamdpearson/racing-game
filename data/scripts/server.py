@@ -78,7 +78,6 @@ def main(map_index):
     all_finished = False
     host_left = False
 
-    # x, y, head_angle, legs_angle, anim_index, char_index
     pos = []
     def threaded_client(conn, player_ref):
         nonlocal connected_players, all_finished, host_left
@@ -182,7 +181,7 @@ def main(map_index):
                 print("Connected to ", addr)
 
                 data = start_coords[map_index]
-                pos.append((data[0]+75*connected_players, data[1], 0, 0, 0))
+                pos.append((data[0]+75*connected_players, data[1], 0, 0, 0, 0))
                 checkpoint_data.append(0)
 
                 player_ref = [connected_players]
