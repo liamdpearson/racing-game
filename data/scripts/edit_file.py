@@ -40,3 +40,36 @@ def get_positions(i):
         line = file.readline()
     
     return line
+
+
+
+def get_vsync():
+    with open("data/data.txt", "r") as file:
+        lines = file.readlines()
+
+    return True if int(lines[2]) == 1 else False
+
+def get_fps():
+    with open("data/data.txt", "r") as file:
+        lines = file.readlines()
+
+    return True if int(lines[3]) == 1 else False
+
+
+def set_vsync(i):
+    with open("data/data.txt", "r") as file:
+        lines = file.readlines()
+
+    lines[2] = str(i) + "\n"
+
+    with open("data/data.txt", "w") as file:
+        file.writelines(lines)
+
+def set_fps(i):
+    with open("data/data.txt", "r") as file:
+        lines = file.readlines()
+
+    lines[3] = str(i) + "\n"
+
+    with open("data/data.txt", "w") as file:
+        file.writelines(lines)

@@ -18,3 +18,8 @@ class SoundManager:
     
     def stop_sound(self):
         arcade.stop_sound(self.sound_player)
+
+    def is_playing(self):
+        if self.sound_player:
+            return self.sound_player.playing
+        return False
