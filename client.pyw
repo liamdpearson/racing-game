@@ -2,6 +2,7 @@
 # Multiplayer Racing Game Client
 
 
+import math
 import arcade
 import arcade.gui
 import threading
@@ -410,6 +411,31 @@ class Game(arcade.View):
 
         # COLLISION CHECKS 
         #---------------------------------------------------------------------------------------#
+
+
+
+        # player collisions with other players
+        px = player_sprite.center_x
+        py = player_sprite.center_y
+        threshold_sq = (player_sprite.width*2)**2
+        for op in self.other_players:
+            ox = op.player_sprite.center_x
+            oy = op.player_sprite.center_y
+
+            dx = px - ox
+            dy = py - oy
+
+            if dx**2 + dy**2 < threshold_sq:
+                if arcade.check_for_collision(player_sprite, op.player_sprite):
+                    if px < ox:
+                        player_sprite.center_x -= .5*multiplier
+                    elif px > ox:
+                        player_sprite.center_x += .5*multiplier
+                    
+                    if py < oy:
+                        player_sprite.center_y -= .5*multiplier
+                    elif py > oy:
+                        player_sprite.center_y += .5*multiplier
 
         # finish line check
         if arcade.check_for_collision_with_list(player_sprite, self.finishline):
