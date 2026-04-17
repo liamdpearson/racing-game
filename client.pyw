@@ -18,8 +18,9 @@ from data.scripts.soundmanager import SoundManager
 
 class Game(arcade.View):
     """ Actual Game Function """
-    def __init__(self, all_init_data):
+    def __init__(self, all_init_data, window):
         super().__init__()
+        self.window = window
 
         self.time = 0
 
@@ -202,7 +203,7 @@ class Game(arcade.View):
         def on_click_settings(event):
             self.manager.disable()
             self.window.n = None
-            self.window.mainmenu = MainMenu()
+            self.window.mainmenu = MainMenu(self.window)
             self.window.show_view(self.window.mainmenu)
             self.window.game = None
             self.ENGINE_SOUND.stop_sound()
@@ -266,7 +267,7 @@ class Game(arcade.View):
                 finished_players = data.split()[-1][:-1]
                 self.window.done = True
                 self.window.n = None
-                self.window.endscreen = EndScreen(finished_players, self.players, self.time)
+                self.window.endscreen = EndScreen(finished_players, self.players, self.time, self.window)
                 self.window.show_view(self.window.endscreen)
                 self.window.game = None
             else:
@@ -369,7 +370,7 @@ class Game(arcade.View):
         #check if should go back to menu
         if self.should_go_back_to_menu:
             self.window.n = None
-            self.window.mainmenu = MainMenu()
+            self.window.mainmenu = MainMenu(self.window)
             self.window.show_view(self.window.mainmenu)
             self.ENGINE_SOUND.stop_sound()
 
@@ -516,65 +517,12 @@ class Game(arcade.View):
         #self.player.mouse_x, self.player.mouse_y = x-SCREEN_WIDTH/2, y-SCREEN_HEIGHT/2
 
 
-class EndScreen(arcade.View):
-    """ Menu class to host and connect """
-    def __init__(self, order, players, time):
-        super().__init__()
-    
-        self.order = order
-        self.players = players
-        self.time = time
-
-        self.minutes = int(self.time // 60)
-        self.seconds = int(self.time % 60)
-        self.milliseconds = int((self.time - int(self.time)) * 100)
-        
-        # init gui manager
-        self.manager = arcade.gui.UIManager()
-        self.manager.enable()
-        
-        # Create a vertical BoxGroup to align buttons
-        self.v_box = arcade.gui.UIBoxLayout()
-
-        # Create the buttons
-        mainmenu_button = arcade.gui.UIFlatButton(text="Main Menu", width=250*SCALE_MULTIPLIER, height=75*SCALE_MULTIPLIER, style=self.window.button_style)
-        self.v_box.add(mainmenu_button.with_space_around(bottom=20*SCALE_MULTIPLIER))
-        
-            
-        @mainmenu_button.event("on_click")
-        def on_click_settings(event):
-            self.manager.disable()
-            self.window.done = False
-            self.window.mainmenu = MainMenu()
-            self.window.show_view(self.window.mainmenu)
-            self.window.endscreen = None
-            
-        
-        # Create a widget to hold the v_box widget, that will center the buttons
-        self.manager.add(
-            arcade.gui.UIAnchorWidget(
-                anchor_x="center_x",
-                anchor_y="center_y",
-                align_y = -SCREEN_HEIGHT/6,
-                child=self.v_box)
-            )
-            
-            
-    def on_draw(self):
-        arcade.start_render()
-        self.manager.draw()
-
-        for i in range(len(self.order)):
-            arcade.draw_text(str(i+1) + ". " + self.players[int(self.order[i])][:-1], SCREEN_WIDTH/2, 3 * SCREEN_HEIGHT/4 - 50*i, self.window.place_colors[i+1], 40, anchor_x="center", font_name="Kenney Mini Square")
-
-        arcade.draw_text(f"Your Time: {self.minutes}:{self.seconds:02d}.{self.milliseconds:02d}", SCREEN_WIDTH/2, 7*SCREEN_HEIGHT/8, arcade.color.WHITE, 30, anchor_x="center", font_name="Kenney Mini Square")
-
-
 class MainMenu(arcade.View):
     """ Menu class to host and connect """
-    def __init__(self):
+    def __init__(self, window):
         super().__init__()
 
+        self.window = window
         self.window.game = None
         self.n = None
 
@@ -604,21 +552,21 @@ class MainMenu(arcade.View):
         @host_button.event("on_click")
         def on_click_settings(event):
             self.manager.disable()
-            self.window.choose_map = ChooseMap()
+            self.window.choose_map = ChooseMap(self.window)
             self.window.show_view(self.window.choose_map)
             self.window.mainmenu = None
             
         @join_button.event("on_click")
         def on_click_settings(event):
             self.manager.disable()
-            self.window.getaddress = GetAddress()
+            self.window.getaddress = GetAddress(self.window)
             self.window.show_view(self.window.getaddress)
             self.window.mainmenu = None
 
         @swap_button.event("on_click")
         def on_click_settings(event):
             self.manager.disable()
-            self.window.swapdata = SwapData()
+            self.window.swapdata = SwapData(self.window)
             self.window.show_view(self.window.swapdata)
             self.window.mainmenu = None
 
@@ -647,12 +595,67 @@ class MainMenu(arcade.View):
         arcade.draw_text("Speed Racing", SCREEN_WIDTH/2, 3*SCREEN_HEIGHT/4, arcade.color.WHITE, SCREEN_WIDTH/20, anchor_x="center", font_name="Kenney Mini Square")
         
 
+class EndScreen(arcade.View):
+    """ Menu class to host and connect """
+    def __init__(self, order, players, time, window):
+        super().__init__()
+    
+        self.order = order
+        self.players = players
+        self.time = time
+        self.window = window
+
+        self.minutes = int(self.time // 60)
+        self.seconds = int(self.time % 60)
+        self.milliseconds = int((self.time - int(self.time)) * 100)
+        
+        # init gui manager
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+        
+        # Create a vertical BoxGroup to align buttons
+        self.v_box = arcade.gui.UIBoxLayout()
+
+        # Create the buttons
+        mainmenu_button = arcade.gui.UIFlatButton(text="Main Menu", width=250*SCALE_MULTIPLIER, height=75*SCALE_MULTIPLIER, style=self.window.button_style)
+        self.v_box.add(mainmenu_button.with_space_around(bottom=20*SCALE_MULTIPLIER))
+        
+            
+        @mainmenu_button.event("on_click")
+        def on_click_settings(event):
+            self.manager.disable()
+            self.window.done = False
+            self.window.mainmenu = MainMenu(self.window)
+            self.window.show_view(self.window.mainmenu)
+            self.window.endscreen = None
+            
+        
+        # Create a widget to hold the v_box widget, that will center the buttons
+        self.manager.add(
+            arcade.gui.UIAnchorWidget(
+                anchor_x="center_x",
+                anchor_y="center_y",
+                align_y = -SCREEN_HEIGHT/6,
+                child=self.v_box)
+            )
+            
+            
+    def on_draw(self):
+        arcade.start_render()
+        self.manager.draw()
+
+        for i in range(len(self.order)):
+            arcade.draw_text(str(i+1) + ". " + self.players[int(self.order[i])][:-1], SCREEN_WIDTH/2, 3 * SCREEN_HEIGHT/4 - 50*i, self.window.place_colors[i+1], 40, anchor_x="center", font_name="Kenney Mini Square")
+
+        arcade.draw_text(f"Your Time: {self.minutes}:{self.seconds:02d}.{self.milliseconds:02d}", SCREEN_WIDTH/2, 7*SCREEN_HEIGHT/8, arcade.color.WHITE, 30, anchor_x="center", font_name="Kenney Mini Square")
+
 
 class ChooseMap(arcade.View):
     """ get map from host """
-    def __init__(self):
+    def __init__(self, window):
         super().__init__()
 
+        self.window = window
         self.selected_map = 0
 
         self.logo_sprites = []
@@ -690,14 +693,14 @@ class ChooseMap(arcade.View):
             self.window.n.set_server(self.window.server)
             self.window.n.connect()
             self.window.hosting = True
-            self.window.lobby = LobbyHost()
+            self.window.lobby = LobbyHost(self.window)
             self.window.show_view(self.window.lobby)
             self.window.choose_map = None
         
         @back_button.event("on_click")
         def on_click_settings(event):
             self.manager.disable()
-            self.window.mainmenu = MainMenu()
+            self.window.mainmenu = MainMenu(self.window)
             self.window.show_view(self.window.mainmenu)
             self.window.choose_map = None
         
@@ -728,9 +731,10 @@ class ChooseMap(arcade.View):
 
 class LobbyHost(arcade.View):
     """ lobby menu for the host """
-    def __init__(self):
+    def __init__(self, window):
         super().__init__()
 
+        self.window = window
         self.all_init_data = ""
 
         self.started = False
@@ -753,7 +757,7 @@ class LobbyHost(arcade.View):
         def on_click_settings(event):
             self.manager.disable()
             self.window.n = None
-            self.window.mainmenu = MainMenu()
+            self.window.mainmenu = MainMenu(self.window)
             self.window.show_view(self.window.mainmenu)
             self.window.lobby = None
         
@@ -778,7 +782,7 @@ class LobbyHost(arcade.View):
         def back_to_menu():
             self.manager.disable()
             self.window.n = None
-            self.window.mainmenu = MainMenu()
+            self.window.mainmenu = MainMenu(self.window)
             self.window.show_view(self.window.mainmenu)
             self.window.lobby = None
         
@@ -803,7 +807,7 @@ class LobbyHost(arcade.View):
         self.all_init_data = lis[1]
 
         if self.all_init_data[-5:] == "start":
-            self.window.game = Game(self.all_init_data[:-5])
+            self.window.game = Game(self.all_init_data[:-5], self.window)
             self.window.show_view(self.window.game)
             self.window.lobby = None
             
@@ -826,9 +830,10 @@ class LobbyHost(arcade.View):
 
 class LobbyGuest(arcade.View):
     """ lobby menu for the host """
-    def __init__(self):
+    def __init__(self, window):
         super().__init__()
 
+        self.window = window
         self.all_init_data = ""
         self.started = False
     
@@ -859,7 +864,7 @@ class LobbyGuest(arcade.View):
     def leave(self):
         self.manager.disable()
         self.window.n = None
-        self.window.mainmenu = MainMenu()
+        self.window.mainmenu = MainMenu(self.window)
         self.window.show_view(self.window.mainmenu)
         self.window.lobby = None
             
@@ -886,7 +891,7 @@ class LobbyGuest(arcade.View):
 
         if self.all_init_data[-5:] == "start":
             self.started = True
-            self.window.game = Game(self.all_init_data[:-5])
+            self.window.game = Game(self.all_init_data[:-5], self.window)
             self.window.show_view(self.window.game)
             self.window.lobby = None
 
@@ -903,9 +908,10 @@ class LobbyGuest(arcade.View):
 
 class GetAddress(arcade.View):
     """ get address for joining player """
-    def __init__(self):
+    def __init__(self, window):
         super().__init__()
 
+        self.window = window
         self.init_data = edit_file.get_name() + str(edit_file.get_character_id())
         
         self.viable_keys = (arcade.key.KEY_0, arcade.key.KEY_1,
@@ -932,7 +938,7 @@ class GetAddress(arcade.View):
         @back_button.event("on_click")
         def on_click_settings(event):
             self.manager.disable()
-            self.window.mainmenu = MainMenu()
+            self.window.mainmenu = MainMenu(self.window)
             self.window.show_view(self.window.mainmenu)
             self.window.getaddress = None
 
@@ -956,7 +962,7 @@ class GetAddress(arcade.View):
             self.window.n.set_server(self.server)
             a = self.window.n.connect()
             if a:               
-                self.window.lobby = LobbyGuest()
+                self.window.lobby = LobbyGuest(self.window)
                 self.window.show_view(self.window.lobby)
                 self.window.getaddress = None
             else:
@@ -973,9 +979,10 @@ class GetAddress(arcade.View):
 
 class SwapData(arcade.View):
     """ swap player data like name and character id """
-    def __init__(self):
+    def __init__(self, window):
         super().__init__()
 
+        self.window = window
         self.name = edit_file.get_name()
 
         self.character_id = edit_file.get_character_id()
@@ -1009,7 +1016,7 @@ class SwapData(arcade.View):
             self.manager.disable()
             edit_file.swap_character_id(self.character_id)
             edit_file.swap_name(self.name)
-            self.window.mainmenu = MainMenu()
+            self.window.mainmenu = MainMenu(self.window)
             self.window.show_view(self.window.mainmenu)
             self.window.swapdata = None
 
@@ -1054,6 +1061,7 @@ class SwapData(arcade.View):
         
         for car in self.car_sprites:
             car.draw(pixelated=True)
+
 
 
 class GameWindow(arcade.Window):
@@ -1120,7 +1128,7 @@ def make_pos(tup):
 
 def main():
     window = GameWindow()
-    window.mainmenu = MainMenu()
+    window.mainmenu = MainMenu(window)
     window.show_view(window.mainmenu)
     window.server = get_local_ipv4()
     arcade.run()
