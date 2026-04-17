@@ -1,3 +1,6 @@
+# Liam Pearson
+# Multiplayer Racing Game File Editing Functions
+
 def swap_name(new_name):
     with open("data/data.txt", "r") as file:
         lines = file.readlines()

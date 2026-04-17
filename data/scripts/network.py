@@ -1,3 +1,7 @@
+# Liam Pearson
+# Multiplayer Racing Game Network class
+
+
 import socket
 
 

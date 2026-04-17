@@ -1,3 +1,7 @@
+# Liam Pearson
+# Multiplayer Racing Game Server
+
+
 import socket
 from _thread import *
 import time

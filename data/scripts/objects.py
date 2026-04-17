@@ -1,3 +1,7 @@
+# Liam Pearson
+# Multiplayer Racing Game Objects
+
+
 import data.scripts.edit_file as edit_file
 import arcade
 import math
@@ -53,7 +57,7 @@ class Marker():
     
 
 class Player():
-    def __init__(self, pos_x, pos_y, car_stats, keybinds, char_index, name, map_index):
+    def __init__(self, pos_x, pos_y, car_stats, char_index, name, map_index):
         super().__init__()
 
         self.DRIFT_BOOST_SOUND = SoundManager("drift_boost.wav")
@@ -104,7 +108,7 @@ class Player():
         self.break_key = arcade.key.S
         self.left_key = arcade.key.A
         self.right_key = arcade.key.D
-        self.drift_key = keybinds[0]
+        self.drift_key = arcade.key.LSHIFT
     
     def shop_boost(self):
         self.speed += 20

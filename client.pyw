@@ -2,7 +2,6 @@
 # Multiplayer Racing Game Client
 
 
-import math
 import arcade
 import arcade.gui
 import threading
@@ -112,7 +111,7 @@ class Game(arcade.View):
         self.background = self.tile_map.sprite_lists["Background"]
         
         # pos x, pos y, move speed, anim speed, char index, 
-        self.player = objects.Player(self.start_pos[0], self.start_pos[1], self.car_stats[self.char_index], [arcade.key.LSHIFT], self.char_index, self.name, self.map_index)
+        self.player = objects.Player(self.start_pos[0], self.start_pos[1], self.car_stats[self.char_index], self.char_index, self.name, self.map_index)
         for player in self.other_players_data:
             op = objects.OtherPlayer(int(player[-1]), player[:-1])
             self.other_players.append(op)
@@ -226,7 +225,7 @@ class Game(arcade.View):
                 anchor_x="center_x",
                 anchor_y="center_y",
                 align_y = 0,
-                align_x = -SCREEN_WIDTH/18,
+                align_x = -SCREEN_WIDTH/19,
                 child=self.v_box1)
         )
 
@@ -235,7 +234,7 @@ class Game(arcade.View):
                 anchor_x="center_x",
                 anchor_y="center_y",
                 align_y = 0,
-                align_x = SCREEN_WIDTH/20,
+                align_x = SCREEN_WIDTH/19,
                 child=self.v_box2)
         )
 
@@ -359,9 +358,8 @@ class Game(arcade.View):
         
     def on_update(self, delta_time):
 
-        # engine sound
-        if not self.ENGINE_SOUND.is_playing():
-            self.ENGINE_SOUND.play_sound()
+        # set engine sound volume based on speed and play if not already playing
+        self.ENGINE_SOUND.play_sound()
         self.ENGINE_SOUND.set_volume(0.1 + abs(0.2 * self.player.speed/self.player.top_speed))
 
         # cache player sprite
@@ -533,22 +531,31 @@ class MainMenu(arcade.View):
         self.manager.enable()
         
         # Create a vertical BoxGroup to align buttons
-        self.v_box = arcade.gui.UIBoxLayout()
+        self.v_box1 = arcade.gui.UIBoxLayout()
+
+        self.v_box2 = arcade.gui.UIBoxLayout()
 
         # Create the buttons
+        # v box 1: host, join, quit
         host_button = arcade.gui.UIFlatButton(text="Host", width=250*SCALE_MULTIPLIER, height=75*SCALE_MULTIPLIER, style=self.window.button_style)
-        self.v_box.add(host_button.with_space_around(bottom=20*SCALE_MULTIPLIER))
+        self.v_box1.add(host_button.with_space_around(bottom=20*SCALE_MULTIPLIER))
         
         join_button = arcade.gui.UIFlatButton(text="Join", width=250*SCALE_MULTIPLIER, height=75*SCALE_MULTIPLIER, style=self.window.button_style)
-        self.v_box.add(join_button.with_space_around(bottom=20*SCALE_MULTIPLIER))
-
-        swap_button = arcade.gui.UIFlatButton(text="Edit Profile", width=250*SCALE_MULTIPLIER, height=75*SCALE_MULTIPLIER, style=self.window.button_style)
-        self.v_box.add(swap_button.with_space_around(bottom=20*SCALE_MULTIPLIER))
+        self.v_box1.add(join_button.with_space_around(bottom=20*SCALE_MULTIPLIER))
 
         quit_button = arcade.gui.UIFlatButton(text="Quit Game", width=250*SCALE_MULTIPLIER, height=75*SCALE_MULTIPLIER, style=self.window.button_style)
-        self.v_box.add(quit_button.with_space_around(bottom=20*SCALE_MULTIPLIER))
-        
-        
+        self.v_box1.add(quit_button.with_space_around(bottom=20*SCALE_MULTIPLIER))
+
+        # v box 2: edit profile, settings, credits
+        swap_button = arcade.gui.UIFlatButton(text="Edit Profile", width=250*SCALE_MULTIPLIER, height=75*SCALE_MULTIPLIER, style=self.window.button_style)
+        self.v_box2.add(swap_button.with_space_around(bottom=20*SCALE_MULTIPLIER))
+
+        settings_button = arcade.gui.UIFlatButton(text="Settings", width=250*SCALE_MULTIPLIER, height=75*SCALE_MULTIPLIER, style=self.window.button_style)
+        self.v_box2.add(settings_button.with_space_around(bottom=20*SCALE_MULTIPLIER))
+
+        credits_button = arcade.gui.UIFlatButton(text="Credits", width=250*SCALE_MULTIPLIER, height=75*SCALE_MULTIPLIER, style=self.window.button_style)
+        self.v_box2.add(credits_button.with_space_around(bottom=20*SCALE_MULTIPLIER))
+
         @host_button.event("on_click")
         def on_click_settings(event):
             self.manager.disable()
@@ -563,18 +570,26 @@ class MainMenu(arcade.View):
             self.window.show_view(self.window.getaddress)
             self.window.mainmenu = None
 
+        @quit_button.event("on_click")
+        def on_click_settings(event):
+            self.manager.disable()
+            self.window.done = True
+            self.window.close()
+
         @swap_button.event("on_click")
         def on_click_settings(event):
             self.manager.disable()
             self.window.swapdata = SwapData(self.window)
             self.window.show_view(self.window.swapdata)
             self.window.mainmenu = None
-
-        @quit_button.event("on_click")
+        
+        @settings_button.event("on_click")
         def on_click_settings(event):
             self.manager.disable()
-            self.window.done = True
-            self.window.close()
+            self.window.settings = SettingsMenu(self.window)
+            self.window.show_view(self.window.settings)
+            self.window.mainmenu = None
+        
         
         # Create a widget to hold the v_box widget, that will center the buttons
         self.manager.add(
@@ -582,7 +597,17 @@ class MainMenu(arcade.View):
                 anchor_x="center_x",
                 anchor_y="center_y",
                 align_y = -SCREEN_HEIGHT/6,
-                child=self.v_box)
+                align_x = -SCREEN_WIDTH/19,
+                child=self.v_box1)
+            )
+
+        self.manager.add(
+            arcade.gui.UIAnchorWidget(
+                anchor_x="center_x",
+                anchor_y="center_y",
+                align_y = -SCREEN_HEIGHT/6,
+                align_x = SCREEN_WIDTH/19,
+                child=self.v_box2)
             )
             
             
@@ -977,6 +1002,99 @@ class GetAddress(arcade.View):
         if self.invalid > 0:
             arcade.draw_text("Invalid IP Try Again", SCREEN_WIDTH/2, 3*SCREEN_HEIGHT/5, arcade.color.YELLOW, 20, anchor_x="center", font_name="Kenney Mini Square")
 
+
+class SettingsMenu(arcade.View):
+    """ settings menu for changing things like vsync and fullscreen """
+    def __init__(self, window):
+        super().__init__()
+
+        self.window = window
+
+        # init gui manager
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+        
+        # Create a vertical BoxGroup to align buttons
+        self.v_box1 = arcade.gui.UIBoxLayout()
+        self.v_box2 = arcade.gui.UIBoxLayout()
+
+
+        self.vsync = edit_file.get_vsync()
+        self.vsync_bool = arcade.gui.UIFlatButton(text="Vsync: on" if self.vsync else "Vsync: off",
+                                                  width=250*SCALE_MULTIPLIER, height=75*SCALE_MULTIPLIER, style=self.window.button_style)
+        self.v_box1.add(self.vsync_bool.with_space_around(bottom=20*SCALE_MULTIPLIER))
+
+
+        self.show_fps = edit_file.get_fps()
+        self.fps_bool = arcade.gui.UIFlatButton(text="FPS: Shown" if self.show_fps else "FPS: Hidden",
+                                                width=250*SCALE_MULTIPLIER, height=75*SCALE_MULTIPLIER, x=1000, y=50, style=self.window.button_style)
+        self.v_box1.add(self.fps_bool.with_space_around(bottom=20*SCALE_MULTIPLIER))
+
+        self.back_button = arcade.gui.UIFlatButton(text="Back to Menu", width=250*SCALE_MULTIPLIER, height=75*SCALE_MULTIPLIER, style=self.window.button_style)
+        self.v_box1.add(self.back_button.with_space_around(bottom=20*SCALE_MULTIPLIER))
+
+        self.accelerate_rebind = arcade.gui.UIFlatButton(text="Accelerate", width=250*SCALE_MULTIPLIER, height=75*SCALE_MULTIPLIER, style=self.window.button_style)
+        self.v_box2.add(self.accelerate_rebind.with_space_around(bottom=20*SCALE_MULTIPLIER))
+
+        self.break_rebind = arcade.gui.UIFlatButton(text="Break", width=250*SCALE_MULTIPLIER, height=75*SCALE_MULTIPLIER, style=self.window.button_style)
+        self.v_box2.add(self.break_rebind.with_space_around(bottom=20*SCALE_MULTIPLIER))
+
+        self.right_rebind = arcade.gui.UIFlatButton(text="Turn Right", width=250*SCALE_MULTIPLIER, height=75*SCALE_MULTIPLIER, style=self.window.button_style)
+        self.v_box2.add(self.right_rebind.with_space_around(bottom=20*SCALE_MULTIPLIER))
+
+        self.left_rebind = arcade.gui.UIFlatButton(text="Turn Left", width=250*SCALE_MULTIPLIER, height=75*SCALE_MULTIPLIER, style=self.window.button_style)
+        self.v_box2.add(self.left_rebind.with_space_around(bottom=20*SCALE_MULTIPLIER))
+
+        self.drift_rebind = arcade.gui.UIFlatButton(text="Drift", width=250*SCALE_MULTIPLIER, height=75*SCALE_MULTIPLIER, style=self.window.button_style)
+        self.v_box2.add(self.drift_rebind.with_space_around(bottom=20*SCALE_MULTIPLIER))
+        
+        self.boost_rebind = arcade.gui.UIFlatButton(text="Boost", width=250*SCALE_MULTIPLIER, height=75*SCALE_MULTIPLIER, style=self.window.button_style)
+        self.v_box2.add(self.boost_rebind.with_space_around(bottom=20*SCALE_MULTIPLIER))
+
+
+        @self.back_button.event("on_click")
+        def on_click_settings(event):
+            self.manager.disable()
+            self.window.mainmenu = MainMenu(self.window)
+            self.window.show_view(self.window.mainmenu)
+            self.window.settings = None
+
+        @self.vsync_bool.event("on_click")
+        def on_click_settings(event):
+            self.vsync = not self.vsync
+            edit_file.set_vsync(1 if self.vsync else 0)
+            self.vsync_bool.text="Vsync: on" if self.vsync else "Vsync: off"
+            self.window.set_vsync(self.vsync)
+
+        @self.fps_bool.event("on_click")
+        def on_click_settings(event):
+            self.show_fps = not self.show_fps
+            edit_file.set_fps(1 if self.show_fps else 0)
+            self.fps_bool.text = "FPS: Shown" if self.show_fps else "FPS: Hidden"
+
+        self.manager.add(
+            arcade.gui.UIAnchorWidget(
+                anchor_x="center_x",
+                anchor_y="center_y",
+                align_y = -SCREEN_HEIGHT/5,
+                align_x = 0,
+                child=self.v_box1)
+        )
+
+        self.manager.add(
+            arcade.gui.UIAnchorWidget(
+                anchor_x="center_x",
+                anchor_y="center_y",
+                align_y = 0,
+                align_x = -SCREEN_WIDTH/3,
+                child=self.v_box2)
+        )
+    
+    def on_draw(self):
+        arcade.start_render()
+        self.manager.draw()
+
+
 class SwapData(arcade.View):
     """ swap player data like name and character id """
     def __init__(self, window):
@@ -990,7 +1108,7 @@ class SwapData(arcade.View):
         self.car_sprites = []
         for i in range(3):
             sprite = arcade.Sprite(scale = 5*SCALE_MULTIPLIER)
-            sprite.center_x = SCREEN_WIDTH/2 + (i-1)*200
+            sprite.center_x = SCREEN_WIDTH/2 + (i-1)*200 * SCALE_MULTIPLIER
             sprite.center_y = 5*SCREEN_HEIGHT/8
             tex = arcade.load_texture("data/sprites/sprite_sheet.png", x = 32*i, y = 0, width = 32, height = 71)
             sprite.texture = tex

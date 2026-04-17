@@ -1,13 +1,14 @@
+# Liam Pearson
+# Multiplayer Racing Game Constants
 
 import arcade
 
-
-#SCREEN_WIDTH, SCREEN_HEIGHT = arcade.window_commands.get_display_size()
-SCREEN_WIDTH, SCREEN_HEIGHT = 1000, 600
+SCREEN_WIDTH, SCREEN_HEIGHT = arcade.window_commands.get_display_size()
+#SCREEN_WIDTH, SCREEN_HEIGHT = 1000, 600
 
 SCALE_MULTIPLIER = SCREEN_WIDTH/2560
 MAP_SCALE_MULTIPLIER = 1.25 * SCALE_MULTIPLIER
 
-DIST_FROM_CORNER = 100
+DIST_FROM_CORNER = 0
 
-FULLSCREEN = False
+FULLSCREEN = True
