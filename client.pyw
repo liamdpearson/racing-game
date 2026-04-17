@@ -29,8 +29,6 @@ class Game(arcade.View):
         self.BEEP_GO_SOUND = SoundManager("beep_go.wav")
         self.ENGINE_SOUND = SoundManager("engine.wav")
 
-        print(all_init_data)
-
         self.fps = 0
         self.start_pos = read_pos(self.window.n.getData())
         
@@ -51,9 +49,21 @@ class Game(arcade.View):
         self.all_positions = None
         
         self.listen_thread = threading.Thread(target=self.listen_for_updates, daemon = True)
+        
+        controls = edit_file.get_controls()
+
+        self.boost_key = controls[-1]
+        self.keybinds = controls[:-1]
 
         #top speed, acceleration, break_speed, handling. perfect stats: 25, 0.25, 0.3, 2.5
         self.car_stats = ((25, 0.18, 0.2, 2), (22.5, 0.3, 0.25, 2.25), (23.75, 0.24, 0.225, 2.125))
+
+        self.place_textures = {}
+
+        for i in range(5):
+            self.place_textures[i+1] = arcade.load_texture(
+                "data/sprites/current_places.png", x = i*32, y = 0, width = 32, height = 32
+            )
         
         self.tile_map = None
         self.wall_list = None
@@ -76,8 +86,9 @@ class Game(arcade.View):
 
         self.hit_coin = -1
         
-        self.setup()
         self.init_ui()
+        self.setup()
+        
     
     
     
@@ -111,7 +122,7 @@ class Game(arcade.View):
         self.background = self.tile_map.sprite_lists["Background"]
         
         # pos x, pos y, move speed, anim speed, char index, 
-        self.player = objects.Player(self.start_pos[0], self.start_pos[1], self.car_stats[self.char_index], self.char_index, self.name, self.map_index)
+        self.player = objects.Player(self.start_pos[0], self.start_pos[1], self.car_stats[self.char_index], self.keybinds, self.char_index, self.name, self.map_index)
         for player in self.other_players_data:
             op = objects.OtherPlayer(int(player[-1]), player[:-1])
             self.other_players.append(op)
@@ -167,6 +178,12 @@ class Game(arcade.View):
         self.spdomtr_dial.center_y = self.speedometer.height/3
         self.spdomtr_dial.angle = 18
 
+        self.cur_place_sprite = arcade.Sprite()
+        self.cur_place_sprite.texture = self.place_textures[1]
+        self.cur_place_sprite.scale = 8 * SCALE_MULTIPLIER
+        self.cur_place_sprite.center_x = SCREEN_HEIGHT/6
+        self.cur_place_sprite.center_y = SCREEN_HEIGHT/6
+
         # init gui manager
         self.manager = arcade.gui.UIManager()
         
@@ -183,7 +200,7 @@ class Game(arcade.View):
 
 
         self.vsync = edit_file.get_vsync()
-        self.vsync_bool = arcade.gui.UIFlatButton(text="Vsync: on" if self.vsync else "Vsync: off",
+        self.vsync_bool = arcade.gui.UIFlatButton(text="Vsync: On" if self.vsync else "Vsync: Off",
                                                   width=250*SCALE_MULTIPLIER, height=75*SCALE_MULTIPLIER, style=self.window.button_style)
         self.v_box2.add(self.vsync_bool.with_space_around(bottom=20*SCALE_MULTIPLIER))
 
@@ -211,7 +228,7 @@ class Game(arcade.View):
         def on_click_settings(event):
             self.vsync = not self.vsync
             edit_file.set_vsync(1 if self.vsync else 0)
-            self.vsync_bool.text="Vsync: on" if self.vsync else "Vsync: off"
+            self.vsync_bool.text="Vsync: On" if self.vsync else "Vsync: Off"
             self.window.set_vsync(self.vsync)
 
         @self.fps_bool.event("on_click")
@@ -324,8 +341,7 @@ class Game(arcade.View):
                              80, anchor_x="center", font_name="Kenney Mini Square")
             
         # draw current place
-        arcade.draw_text(str(self.current_place), SCREEN_HEIGHT/10 + 5, SCREEN_HEIGHT/10 - 5, arcade.color.EERIE_BLACK, 150 * SCALE_MULTIPLIER, font_name="Kenney Blocks")
-        arcade.draw_text(str(self.current_place), SCREEN_HEIGHT/10, SCREEN_HEIGHT/10, self.window.place_colors[self.current_place], 150 * SCALE_MULTIPLIER, font_name="Kenney Blocks")
+        self.cur_place_sprite.draw(pixelated=True)
 
         # draw info
         if self.show_fps:
@@ -400,6 +416,9 @@ class Game(arcade.View):
         self.spdomtr_dial.angle = 20 - abs(3*self.player.speed)
         if self.spdomtr_dial.angle < -198:
             self.spdomtr_dial.angle = -198
+
+        # update cur_place_sprite
+        self.cur_place_sprite.texture = self.place_textures[self.current_place]
         
         # camera stuff
         cam_pos_x = player_sprite.center_x - self.cam_offset_x
@@ -501,7 +520,7 @@ class Game(arcade.View):
             self.show_menu = not self.show_menu
             self.manager.enable() if self.show_menu else self.manager.disable()
         
-        if key == arcade.key.SPACE:
+        if key == self.boost_key:
             if self.coin_counter >= 5:
                 self.player.shop_boost()
                 self.coin_counter -= 5
@@ -630,6 +649,12 @@ class EndScreen(arcade.View):
         self.time = time
         self.window = window
 
+        self.place_colors = {1 : arcade.color.GOLD,
+                             2 : arcade.color.SILVER,
+                               3: arcade.color.BRONZE,
+                                 4: arcade.color.GRAY,
+                                   5: arcade.color.GRAY}
+
         self.minutes = int(self.time // 60)
         self.seconds = int(self.time % 60)
         self.milliseconds = int((self.time - int(self.time)) * 100)
@@ -670,7 +695,7 @@ class EndScreen(arcade.View):
         self.manager.draw()
 
         for i in range(len(self.order)):
-            arcade.draw_text(str(i+1) + ". " + self.players[int(self.order[i])][:-1], SCREEN_WIDTH/2, 3 * SCREEN_HEIGHT/4 - 50*i, self.window.place_colors[i+1], 40, anchor_x="center", font_name="Kenney Mini Square")
+            arcade.draw_text(str(i+1) + ". " + self.players[int(self.order[i])][:-1], SCREEN_WIDTH/2, 3 * SCREEN_HEIGHT/4 - 50*i, self.place_colors[i+1], 40, anchor_x="center", font_name="Kenney Mini Square")
 
         arcade.draw_text(f"Your Time: {self.minutes}:{self.seconds:02d}.{self.milliseconds:02d}", SCREEN_WIDTH/2, 7*SCREEN_HEIGHT/8, arcade.color.WHITE, 30, anchor_x="center", font_name="Kenney Mini Square")
 
@@ -1010,6 +1035,17 @@ class SettingsMenu(arcade.View):
 
         self.window = window
 
+        self.controls = edit_file.get_controls()
+
+        self.waiting = False
+        self.switch_index = -1
+
+        self.key_map = {}
+        for name in dir(arcade.key):
+            if name.isupper():
+                value = getattr(arcade.key, name)
+                self.key_map[value] = name
+
         # init gui manager
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
@@ -1020,7 +1056,7 @@ class SettingsMenu(arcade.View):
 
 
         self.vsync = edit_file.get_vsync()
-        self.vsync_bool = arcade.gui.UIFlatButton(text="Vsync: on" if self.vsync else "Vsync: off",
+        self.vsync_bool = arcade.gui.UIFlatButton(text="Vsync: On" if self.vsync else "Vsync: Off",
                                                   width=250*SCALE_MULTIPLIER, height=75*SCALE_MULTIPLIER, style=self.window.button_style)
         self.v_box1.add(self.vsync_bool.with_space_around(bottom=20*SCALE_MULTIPLIER))
 
@@ -1030,11 +1066,19 @@ class SettingsMenu(arcade.View):
                                                 width=250*SCALE_MULTIPLIER, height=75*SCALE_MULTIPLIER, x=1000, y=50, style=self.window.button_style)
         self.v_box1.add(self.fps_bool.with_space_around(bottom=20*SCALE_MULTIPLIER))
 
+        self.reset_keys = arcade.gui.UIFlatButton(text="Reset Keys", width=250*SCALE_MULTIPLIER, height=75*SCALE_MULTIPLIER, style=self.window.button_style)
+        self.v_box1.add(self.reset_keys.with_space_around(bottom=20*SCALE_MULTIPLIER))
+
         self.back_button = arcade.gui.UIFlatButton(text="Back to Menu", width=250*SCALE_MULTIPLIER, height=75*SCALE_MULTIPLIER, style=self.window.button_style)
         self.v_box1.add(self.back_button.with_space_around(bottom=20*SCALE_MULTIPLIER))
 
+
+
         self.accelerate_rebind = arcade.gui.UIFlatButton(text="Accelerate", width=250*SCALE_MULTIPLIER, height=75*SCALE_MULTIPLIER, style=self.window.button_style)
         self.v_box2.add(self.accelerate_rebind.with_space_around(bottom=20*SCALE_MULTIPLIER))
+
+        self.left_rebind = arcade.gui.UIFlatButton(text="Turn Left", width=250*SCALE_MULTIPLIER, height=75*SCALE_MULTIPLIER, style=self.window.button_style)
+        self.v_box2.add(self.left_rebind.with_space_around(bottom=20*SCALE_MULTIPLIER))
 
         self.break_rebind = arcade.gui.UIFlatButton(text="Break", width=250*SCALE_MULTIPLIER, height=75*SCALE_MULTIPLIER, style=self.window.button_style)
         self.v_box2.add(self.break_rebind.with_space_around(bottom=20*SCALE_MULTIPLIER))
@@ -1042,19 +1086,20 @@ class SettingsMenu(arcade.View):
         self.right_rebind = arcade.gui.UIFlatButton(text="Turn Right", width=250*SCALE_MULTIPLIER, height=75*SCALE_MULTIPLIER, style=self.window.button_style)
         self.v_box2.add(self.right_rebind.with_space_around(bottom=20*SCALE_MULTIPLIER))
 
-        self.left_rebind = arcade.gui.UIFlatButton(text="Turn Left", width=250*SCALE_MULTIPLIER, height=75*SCALE_MULTIPLIER, style=self.window.button_style)
-        self.v_box2.add(self.left_rebind.with_space_around(bottom=20*SCALE_MULTIPLIER))
-
         self.drift_rebind = arcade.gui.UIFlatButton(text="Drift", width=250*SCALE_MULTIPLIER, height=75*SCALE_MULTIPLIER, style=self.window.button_style)
         self.v_box2.add(self.drift_rebind.with_space_around(bottom=20*SCALE_MULTIPLIER))
         
         self.boost_rebind = arcade.gui.UIFlatButton(text="Boost", width=250*SCALE_MULTIPLIER, height=75*SCALE_MULTIPLIER, style=self.window.button_style)
         self.v_box2.add(self.boost_rebind.with_space_around(bottom=20*SCALE_MULTIPLIER))
 
+        
+
+
 
         @self.back_button.event("on_click")
         def on_click_settings(event):
             self.manager.disable()
+            edit_file.set_controls(self.controls)
             self.window.mainmenu = MainMenu(self.window)
             self.window.show_view(self.window.mainmenu)
             self.window.settings = None
@@ -1063,7 +1108,7 @@ class SettingsMenu(arcade.View):
         def on_click_settings(event):
             self.vsync = not self.vsync
             edit_file.set_vsync(1 if self.vsync else 0)
-            self.vsync_bool.text="Vsync: on" if self.vsync else "Vsync: off"
+            self.vsync_bool.text="Vsync: On" if self.vsync else "Vsync: Off"
             self.window.set_vsync(self.vsync)
 
         @self.fps_bool.event("on_click")
@@ -1071,6 +1116,40 @@ class SettingsMenu(arcade.View):
             self.show_fps = not self.show_fps
             edit_file.set_fps(1 if self.show_fps else 0)
             self.fps_bool.text = "FPS: Shown" if self.show_fps else "FPS: Hidden"
+
+        @self.accelerate_rebind.event("on_click")
+        def on_click_settings(event):
+            self.waiting = True
+            self.switch_index = 0
+        
+        @self.left_rebind.event("on_click")
+        def on_click_settings(event):
+            self.waiting = True
+            self.switch_index = 1
+        
+        @self.break_rebind.event("on_click")
+        def on_click_settings(event):
+            self.waiting = True
+            self.switch_index = 2
+        
+        @self.right_rebind.event("on_click")
+        def on_click_settings(event):
+            self.waiting = True
+            self.switch_index = 3
+        
+        @self.drift_rebind.event("on_click")
+        def on_click_settings(event):
+            self.waiting = True
+            self.switch_index = 4
+        
+        @self.boost_rebind.event("on_click")
+        def on_click_settings(event):
+            self.waiting = True
+            self.switch_index = 5
+
+        @self.reset_keys.event("on_click")
+        def on_click_settings(event):
+            self.controls = [119, 97, 115, 100, 65505, 32]
 
         self.manager.add(
             arcade.gui.UIAnchorWidget(
@@ -1089,11 +1168,31 @@ class SettingsMenu(arcade.View):
                 align_x = -SCREEN_WIDTH/3,
                 child=self.v_box2)
         )
+
     
     def on_draw(self):
         arcade.start_render()
         self.manager.draw()
 
+        binds = self.controls
+        for i, bind in enumerate(binds):
+            arcade.draw_text(self.key_map.get(bind, str(bind)), 
+                            SCREEN_WIDTH/4, SCREEN_HEIGHT/2 + (230 - i*95) * SCALE_MULTIPLIER, 
+                            arcade.color.WHITE, 50, anchor_x="left", font_name="Kenney Mini Square")
+        
+        if self.waiting:
+            arcade.draw_text("Press any Key", 
+                            SCREEN_WIDTH/6, 5*SCREEN_HEIGHT/6, 
+                            arcade.color.WHITE, 50, anchor_x="center", font_name="Kenney Mini Square")
+
+
+
+    def on_key_press(self, key, modifiers):
+        if self.waiting:
+            if self.switch_index > -1:
+                self.controls[self.switch_index] = key
+                self.waiting = False
+                self.switch_index = -1
 
 class SwapData(arcade.View):
     """ swap player data like name and character id """
@@ -1195,12 +1294,6 @@ class GameWindow(arcade.Window):
         self.button_style = {"font_name" : "Kenney Pixel", "font_size" : 40*SCALE_MULTIPLIER}
         
         self.done = False
-
-        self.place_colors = {1 : arcade.color.GOLD,
-                             2 : arcade.color.SILVER,
-                               3: arcade.color.BRONZE,
-                                 4: arcade.color.GRAY,
-                                   5: arcade.color.GRAY}
         
     def on_close(self):
         self.done = True

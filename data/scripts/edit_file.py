@@ -76,3 +76,21 @@ def set_fps(i):
 
     with open("data/data.txt", "w") as file:
         file.writelines(lines)
+
+def get_controls():
+    with open("data/data.txt", "r") as file:
+        lines = file.readlines()
+
+        a = lines[4].split()
+        b = [int(i) for i in a]
+
+    return b
+
+def set_controls(lis):
+    with open("data/data.txt", "r") as file:
+        lines = file.readlines()
+
+    lines[4] = " ".join(str(i) for i in lis) + "\n"
+
+    with open("data/data.txt", "w") as file:
+        file.writelines(lines)
