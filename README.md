@@ -21,6 +21,7 @@ https://ldpgames.itch.io/racing-game
 8. Multiple Cars
 9. Other Player location prediction
 10. Robust server
+11. Customizable Keybinds
 
 
 
