@@ -970,7 +970,7 @@ class GetAddress(arcade.View):
                             arcade.key.KEY_8, arcade.key.KEY_9,
                             arcade.key.PERIOD)
         
-        self.server = "192.168.0.107"
+        self.server = ""
         self.invalid = 0
 
         # init gui manager
@@ -1231,7 +1231,7 @@ class SettingsMenu(arcade.View):
         for i, bind in enumerate(binds):
             arcade.draw_text(self.key_map.get(bind, str(bind)), 
                             SCREEN_WIDTH/4, SCREEN_HEIGHT/2 + (230 - i*95) * SCALE_MULTIPLIER, 
-                            arcade.color.WHITE, 50, anchor_x="left", font_name="Kenney Mini Square")
+                            arcade.color.WHITE, 50*SCALE_MULTIPLIER, anchor_x="left", font_name="Kenney Mini Square")
         
         if self.waiting:
             arcade.draw_text("Press any Key", 
