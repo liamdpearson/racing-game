@@ -1,4 +1,6 @@
-![Title](itch-img/title_image.png)
+![Title](itch-img/itchthumbnail.png)
+
+
 ![Python](https://img.shields.io/badge/python-3.11.9-blue)
 ![Python](https://img.shields.io/badge/arcade-2.6.17-red)
 
