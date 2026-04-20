@@ -6,7 +6,8 @@ Real-time local multiplayer racing game using threading and sockets. You can pla
 
 Written in Python using the Arcade library version 2.6.17.
 
-[![Demo here:](https://img.youtube.com/vi/U49YeNZXZb4/maxresdefault.jpg)](https://www.youtube.com/watch?v=U49YeNZXZb4)
+Demo here:
+[![](https://img.youtube.com/vi/U49YeNZXZb4/maxresdefault.jpg)](https://www.youtube.com/watch?v=U49YeNZXZb4)
 
 Download on itch.io:
 https://ldpgames.itch.io/racing-game
