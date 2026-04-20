@@ -537,6 +537,13 @@ class MainMenu(arcade.View):
         self.n = None
 
         self.init_data = ""
+
+        self.title_sprite = arcade.Sprite(
+            "data/sprites/title_image.png",
+            scale=4*SCALE_MULTIPLIER, 
+            center_x=SCREEN_WIDTH/2,
+            center_y=2*SCREEN_HEIGHT/3
+        )
         
         # init gui manager
         self.manager = arcade.gui.UIManager()
@@ -633,10 +640,8 @@ class MainMenu(arcade.View):
         arcade.start_render()
         self.manager.draw()
 
-        arcade.draw_text("Version Alpha 1.4.1", SCREEN_WIDTH/50, SCREEN_HEIGHT/25, arcade.color.WHITE, 30 * SCALE_MULTIPLIER, font_name="Kenney Mini Square")
-        arcade.draw_text("Speed Racing", SCREEN_WIDTH/2 + 10*SCALE_MULTIPLIER, 3*SCREEN_HEIGHT/4 - 10*SCALE_MULTIPLIER, arcade.color.EERIE_BLACK, SCREEN_WIDTH/20, anchor_x="center", font_name="Kenney Mini Square")
-        arcade.draw_text("Speed Racing", SCREEN_WIDTH/2, 3*SCREEN_HEIGHT/4, arcade.color.WHITE, SCREEN_WIDTH/20, anchor_x="center", font_name="Kenney Mini Square")
-        
+        arcade.draw_text("Version Alpha 1.4.2", SCREEN_WIDTH/50, SCREEN_HEIGHT/25, arcade.color.WHITE, 30 * SCALE_MULTIPLIER, font_name="Kenney Mini Square")
+        self.title_sprite.draw(pixelated=True)
 
 class EndScreen(arcade.View):
     """ Menu class to host and connect """
