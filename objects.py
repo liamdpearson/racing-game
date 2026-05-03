@@ -2,12 +2,12 @@
 # Multiplayer Racing Game Objects
 
 
-import data.scripts.edit_file as edit_file
+import edit_file as edit_file
 import arcade
 import math
 
-from data.scripts.constants import SCALE_MULTIPLIER, MAP_SCALE_MULTIPLIER
-from data.scripts.soundmanager import SoundManager
+from constants import SCALE_MULTIPLIER, MAP_SCALE_MULTIPLIER
+from soundmanager import SoundManager
 
 class Marker():
     def __init__(self, player_x, player_y, map_index):

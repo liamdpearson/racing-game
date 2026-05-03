@@ -7,12 +7,12 @@ import arcade.gui
 import threading
 import socket
 
-from data.scripts.network import Network
-import data.scripts.server as server
-import data.scripts.edit_file as edit_file
-import data.scripts.objects as objects
-from data.scripts.constants import MAP_SCALE_MULTIPLIER, SCREEN_WIDTH, SCREEN_HEIGHT, SCALE_MULTIPLIER, DIST_FROM_CORNER, FULLSCREEN
-from data.scripts.soundmanager import SoundManager
+from network import Network
+import server as server
+import edit_file as edit_file
+import objects as objects
+from constants import MAP_SCALE_MULTIPLIER, SCREEN_WIDTH, SCREEN_HEIGHT, SCALE_MULTIPLIER, DIST_FROM_CORNER, FULLSCREEN
+from soundmanager import SoundManager
 
 
 class Game(arcade.View):
