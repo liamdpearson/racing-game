@@ -24,7 +24,7 @@ Written in **Python** using the **Arcade library v2.6.17**.
     
 
 ### Demo here:
-[![](https://img.youtube.com/vi/3zkjWePatzA/maxresdefault.jpg)]([https://](https://www.youtube.com/watch?v=3zkjWePatzA&t))
+[![](https://i3.ytimg.com/vi/3zkjWePatzA/maxresdefault.jpg)]([https://](https://www.youtube.com/watch?v=3zkjWePatzA&t))
 
 ### Download on itch.io:
 https://ldpgames.itch.io/racing-game
