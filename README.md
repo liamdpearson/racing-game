@@ -9,6 +9,8 @@ A real-time local multiplayer racing game built with sockets and threading. Play
 
 Written in **Python** using the **Arcade library v2.6.17**.
 
+[Download on itch.io](https://ldpgames.itch.io/racing-game)
+
 ## Features:
 1. Customizable Keybinds
 2. Other Player location prediction
@@ -25,11 +27,3 @@ Written in **Python** using the **Arcade library v2.6.17**.
 
 ### Demo here:
 [![Demo here:](https://i3.ytimg.com/vi/3zkjWePatzA/hqdefault.jpg)](https://www.youtube.com/watch?v=3zkjWePatzA)
-
-[Download on itch.io](https://ldpgames.itch.io/racing-game)
-
-
-
-
-
-
