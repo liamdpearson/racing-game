@@ -26,8 +26,7 @@ Written in **Python** using the **Arcade library v2.6.17**.
 ### Demo here:
 [![Demo here:](https://i3.ytimg.com/vi/3zkjWePatzA/hqdefault.jpg)](https://www.youtube.com/watch?v=3zkjWePatzA)
 
-### Download on itch.io:
-https://ldpgames.itch.io/racing-game
+[Download on itch.io](https://ldpgames.itch.io/racing-game)
 
 
 
