@@ -5,7 +5,7 @@
 ![Python](https://img.shields.io/badge/python-3.11.9-blue)
 ![Python](https://img.shields.io/badge/arcade-2.6.17-red)
 
-A real-time local multiplayer racing game built with sockets and threading. Play solo or with up to **5 people** on the same Wi-Fi network.
+A real-time local multiplayer racing game built with sockets and threading. Play solo or with up to **4 others** on the same Wi-Fi network.
 
 Written in **Python** using the **Arcade library v2.6.17**.
 
