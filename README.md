@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="itch-img/title_image.png" width="400">
+  <img src="itch-img/title_image.png" width="700">
 </p>
 
 ![Python](https://img.shields.io/badge/python-3.11.9-blue)
